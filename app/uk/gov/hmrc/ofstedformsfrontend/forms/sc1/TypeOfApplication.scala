@@ -14,22 +14,40 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.forms.cs1
+package uk.gov.hmrc.ofstedformsfrontend.forms.sc1
 
 import enumeratum._
 import enumeratum.values.{IntEnum, IntEnumEntry}
-import org.joda.time.LocalDateTime
+import org.joda.time.DateTime
+import org.w3c.dom.{Document, DocumentFragment}
+import uk.gov.hmrc.ofstedformsfrontend.marshallers.xml.{EnumMarshaller, IntEnumMarshaller, XmlMarshaller}
 
 import scala.collection.immutable
 
-class SCTypeOfApplicationType(applicationType: ProvisionTypeType,
-                              sectorId: SectorType,
-                              applyingAs: OwnershipType,
-                              OnSchoolPremises: Boolean,
-                              OfstedSchoolReferenceNumber: String,
-                              SchoolName: String,
-                              PurchaseExisting: Boolean,
-                              TargetOpeningDate: LocalDateTime)
+case class SCTypeOfApplicationType(applicationType: ProvisionTypeType,
+                                   sectorId: SectorType,
+                                   applyingAs: OwnershipType,
+                                   OnSchoolPremises: Boolean,
+                                   OfstedSchoolReferenceNumber: Option[String],
+                                   SchoolName: Option[String],
+                                   PurchaseExisting: Boolean,
+                                   TargetOpeningDate: DateTime)
+
+object SCTypeOfApplicationType {
+  implicit val marshaller = new XmlMarshaller[SCTypeOfApplicationType] {
+    override def marshall(obj: SCTypeOfApplicationType)(implicit document: Document): DocumentFragment = {
+      createFragment(document) { fragment =>
+        fragment.createValue("ApplicationType", obj.applicationType)
+          .createValue("SectorId", obj.sectorId)
+          .createValue("ApplyingAs", obj.applyingAs)
+          .createValue("OnSchoolPremises", obj.OnSchoolPremises)(XmlMarshaller.yesNoMarshaller)
+          .createValue("OfstedSchoolReferenceNumber", obj.OfstedSchoolReferenceNumber)
+          .createValue("PurchaseExisting", obj.PurchaseExisting)(XmlMarshaller.yesNoMarshaller)
+          .createValue("TargetOpeningDate", obj.TargetOpeningDate)
+      }
+    }
+  }
+}
 
 sealed abstract class SectorType(val value: Int) extends IntEnumEntry
 
@@ -44,11 +62,12 @@ object SectorType extends IntEnum[SectorType] {
 
   case object Private extends SectorType(value = 1)
 
+  implicit val marshaller: XmlMarshaller[SectorType] = new IntEnumMarshaller[SectorType]
 }
 
-sealed abstract class OwnershipType(val value: Int) extends IntEnumEntry
+sealed abstract class OwnershipType(val value: Int) extends EnumEntry
 
-object OwnershipType extends IntEnum[OwnershipType] {
+object OwnershipType extends Enum[OwnershipType] {
   val values: immutable.IndexedSeq[OwnershipType] = findValues
 
   case object Individual extends OwnershipType(1)
@@ -56,6 +75,8 @@ object OwnershipType extends IntEnum[OwnershipType] {
   case object LocalAuthority extends OwnershipType(2)
 
   case object Organisation extends OwnershipType(3)
+
+  implicit val marshaller: XmlMarshaller[OwnershipType] = new EnumMarshaller[OwnershipType]
 }
 
 sealed abstract class SectorId(val value: Int) extends IntEnumEntry
@@ -70,6 +91,8 @@ object SectorId extends IntEnum[SectorId] {
   case object LocalAuth extends SectorId(3)
 
   case object HealthAuth extends SectorId(4)
+
+  implicit val marshaller: XmlMarshaller[SectorId] = new IntEnumMarshaller[SectorId]
 }
 
 
@@ -110,4 +133,5 @@ object ProvisionTypeType extends Enum[ProvisionTypeType] {
 
   case object PrivateFosteringArrangements extends ProvisionTypeType
 
+  implicit val marshaller: XmlMarshaller[ProvisionTypeType] = new EnumMarshaller[ProvisionTypeType]
 }

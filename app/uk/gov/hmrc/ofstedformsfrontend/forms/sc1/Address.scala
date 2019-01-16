@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.forms.cs1
+package uk.gov.hmrc.ofstedformsfrontend.forms.sc1
 
 import org.joda.time.DateTime
 import org.w3c.dom.{Document, DocumentFragment}
@@ -39,13 +39,13 @@ case class Address(id: Option[Int],
                    address2: String,
                    address3: Option[String],
                    town: String,
-                   country: String,
+                   county: String,
                    postCode: String,
                    localAuthorityDescription: String,
                    localAuthorityCode: String,
                    regionId: Option[RegionIdType],
-                   from: DateTime,
-                   to: DateTime)
+                   from: Option[DateTime],
+                   to: Option[DateTime])
 
 object Address {
   implicit val marshaller: XmlMarshaller[Address] = new XmlMarshaller[Address] {
@@ -56,7 +56,8 @@ object Address {
           .createValue("Address2", obj.address2)
           .createValue("Address3", obj.address3)
           .createValue("Town", obj.town)
-          .createValue("Country", obj.country)
+          .createValue("County", obj.county)
+          .createValue("PostCode", obj.postCode)
           .createValue("LocalAuthorityDescription", obj.localAuthorityCode)
           .createValue("LocalAuthorityCode", obj.localAuthorityCode)
           .createValue("RegionId", obj.regionId)

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.forms.cs1
+package uk.gov.hmrc.ofstedformsfrontend.forms.sc1
 
 import enumeratum._
 import java.time.{LocalDate => Date}
@@ -78,13 +78,13 @@ object Act extends Enum[Act] {
 
 sealed trait Applicant
 
-case class Individual(title: String,
-                      firstName: String,
-                      surname: String,
-                      dob: Date,
-                      position: String,
-                      management: Boolean,
-                      contactChildren: Boolean) extends Applicant
+//case class Individual(title: String,
+//                      firstName: String,
+//                      surname: String,
+//                      dob: Date,
+//                      position: String,
+//                      management: Boolean,
+//                      contactChildren: Boolean) extends Applicant
 
 sealed trait OrgOrPartnership extends Applicant {
   def refusedApplication: Option[RefusedApplication]
@@ -94,24 +94,7 @@ sealed trait OrgOrPartnership extends Applicant {
   def address: Address
 }
 
-sealed trait OrganisationType extends EnumEntry
-
-object OrganisationType extends Enum[OrganisationType] {
-  val values = findValues
-
-  case object Company extends OrganisationType
-
-  case object StatutoryBody extends OrganisationType
-
-  case object Committee extends OrganisationType
-
-  case object Other extends OrganisationType
-
-}
-
 sealed trait OrganisationSector extends EnumEntry
-
-
 
 case class Subsidiary(name: String, //
                       address: Address, //
@@ -128,26 +111,26 @@ case class HoldingCompany(name: String, //
                           companyNumber: Option[String], //
                           subsidiaries: Option[Subsidiary])
 
-case class Organisation(refusedApplication: Option[RefusedApplication], //
-                        orgSector: OrganisationSector, //
-                        orgType: OrganisationType, //
-                        name: String, //
-                        address: Address, //
-                        email: String, //
-                        telephone: String, //
-                        creationDate: Date, //
-                        charityNumber: Option[String], //
-                        companyNumber: Option[String], //
-                        commsOptOut: Boolean, //
-                        holdingCompany: Option[HoldingCompany], //
-                        manager: Individual, //
-                        members: Option[Individual], // list
-                        membersDisqualified: Option[Individual]) extends OrgOrPartnership
+//case class Organisation(refusedApplication: Option[RefusedApplication], //
+//                        orgSector: OrganisationSector, //
+//                        orgType: OrganisationType, //
+//                        name: String, //
+//                        address: Address, //
+//                        email: String, //
+//                        telephone: String, //
+//                        creationDate: Date, //
+//                        charityNumber: Option[String], //
+//                        companyNumber: Option[String], //
+//                        commsOptOut: Boolean, //
+//                        holdingCompany: Option[HoldingCompany], //
+//                        manager: Individual, //
+//                        members: Option[Individual], // list
+//                        membersDisqualified: Option[Individual]) extends OrgOrPartnership
 
-case class Partnership(refusedApplication: Option[RefusedApplication],
-                       name: String,
-                       address: Address,
-                       members: Option[Individual]) extends OrgOrPartnership
+//case class Partnership(refusedApplication: Option[RefusedApplication],
+//                       name: String,
+//                       address: Address,
+//                       members: Option[Individual]) extends OrgOrPartnership
 
 case class RegisteredEstablishmentOrAgency(name: String,
                                            address: Address,
