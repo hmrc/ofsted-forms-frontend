@@ -17,26 +17,25 @@
 package uk.gov.hmrc.ofstedformsfrontend.communication
 
 import enumeratum._
-import org.joda.time.LocalDate
+import javax.xml.parsers.DocumentBuilder
+import org.w3c.dom.Document
+import uk.gov.hmrc.ofstedformsfrontend.forms.{ApplicationForm, Form}
 
 import scala.collection.immutable
 
-class SendApplicationForms(forms: ApplicationForms,
-                           formType: FormType,
-                           formId: FormId,
-                           createdBy: CreatedBy,
-                           createdDate: LocalDate,
-                           source: ApplicationSource,
-                           parentId: ParentId,
-                           communicationId: Option[String],
-                           urn: URN,
-                           documents: Option[Documents],
-                           formMetadata: FormMetada,
-                           payments: Option[Payments])
-
-
-
-case class ApplicationForms()
+case class SendApplicationForms(forms: Seq[ApplicationForm]) {
+  def toDocument(build: DocumentBuilder): Document = {
+    val document = build.newDocument()
+    val root = document.createElement("ApplicationForms")
+    document.appendChild(root)
+    forms.foreach { form =>
+      val element  = document.createElement("ApplicationForm")
+      element.appendChild(ApplicationForm.marshaller.marshall(form)(document))
+      root.appendChild(element)
+    }
+    document
+  }
+}
 
 sealed trait FormType extends EnumEntry
 
@@ -45,21 +44,3 @@ object FormType extends Enum[FormType] {
 
   case object SC1 extends FormType
 }
-
-
-case class FormId()
-
-case class CreatedBy()
-
-case class ApplicationSource()
-
-case class ParentId()
-
-case class URN()
-
-case class Documents()
-
-case class Payments()
-
-case class FormMetada()
-

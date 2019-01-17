@@ -22,7 +22,9 @@ import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 import org.joda.time.DateTime
 import org.scalatest.FunSuite
+import uk.gov.hmrc.ofstedformsfrontend.communication.SendApplicationForms
 import uk.gov.hmrc.ofstedformsfrontend.forms
+import uk.gov.hmrc.ofstedformsfrontend.forms._
 import uk.gov.hmrc.ofstedformsfrontend.marshallers.xml.XmlMarshaller
 
 class SC1FormTest extends FunSuite {
@@ -140,14 +142,24 @@ class SC1FormTest extends FunSuite {
 
   val sc1 = SC1Form(typeOfApplication, organization, nominated, premise, provision, manager)
 
+  val form = ApplicationForm(
+    id = 1,
+    form = sc1,
+    "rbhatt",
+    DateTime.parse("2018-11-28T01:45:34"),
+    ApplicationSource.Online,
+    0,
+    "C50329212",
+    "2510737",
+    Documents(Seq(Attachment("Ofsted_SC1", "doc", "Base64String"))),
+    FormMetadata()
+  )
+
+  val sendApplicationFormEvnelop = SendApplicationForms(Seq(form))
+
   val builderFactory = DocumentBuilderFactory.newInstance()
   val builder = builderFactory.newDocumentBuilder()
-  val document = builder.newDocument()
-  val marshaller = implicitly[XmlMarshaller[SC1Form]]
-  val fragemtn = marshaller.marshall(sc1)(document)
-  val ele = document.createElement("SC1")
-  ele.appendChild(fragemtn)
-  document.appendChild(ele)
+  val document = sendApplicationFormEvnelop.toDocument(builder)
   val transformerFactory = TransformerFactory.newInstance()
   val transformer = transformerFactory.newTransformer()
   transformer.setOutputProperty(OutputKeys.INDENT, "yes")

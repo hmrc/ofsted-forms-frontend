@@ -17,6 +17,8 @@
 package uk.gov.hmrc.ofstedformsfrontend.forms.sc1
 
 import org.w3c.dom.{Document, DocumentFragment}
+import uk.gov.hmrc.ofstedformsfrontend.communication.FormType
+import uk.gov.hmrc.ofstedformsfrontend.forms.Form
 import uk.gov.hmrc.ofstedformsfrontend.marshallers.xml.XmlMarshaller
 
 case class SC1Form(typeOfApplicationType: SCTypeOfApplicationType,
@@ -24,10 +26,19 @@ case class SC1Form(typeOfApplicationType: SCTypeOfApplicationType,
                    nominated: Individual,
                    premises: Premises,
                    provision: Provision,
-                   manager: Individual)
+                   manager: Individual) extends Form {
+
+  override def toDocument(document: Document): DocumentFragment = {
+    val fragment = document.createDocumentFragment()
+    val root = document.createElement(FormType.SC1.toString)
+    fragment.appendChild(root)
+    root.appendChild(SC1Form.marshaller.marshall(this)(document))
+    fragment
+  }
+}
 
 object SC1Form {
-  implicit val marshaller = new XmlMarshaller[SC1Form] {
+  implicit val marshaller: XmlMarshaller[SC1Form] = new XmlMarshaller[SC1Form] {
     override def marshall(obj: SC1Form)(implicit document: Document): DocumentFragment = {
       createFragment(document){ fragment =>
         fragment.createValue("TypeOfApplication", obj.typeOfApplicationType)

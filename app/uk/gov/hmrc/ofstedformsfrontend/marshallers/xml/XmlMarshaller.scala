@@ -51,6 +51,11 @@ class ElementBuilder(element: Element, document: Document) {
     element.appendChild(marshaller.marshall(t)(document))
     this
   }
+
+  def appendChild(node: Node): ElementBuilder = {
+    element.appendChild(node)
+    this
+  }
 }
 
 class FragmentBuilder(fragment: DocumentFragment, document: Document) {
