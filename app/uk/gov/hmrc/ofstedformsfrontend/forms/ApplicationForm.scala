@@ -19,13 +19,12 @@ package uk.gov.hmrc.ofstedformsfrontend.forms
 import enumeratum._
 import org.joda.time.DateTime
 import org.w3c.dom.{Document, DocumentFragment, Node}
-import uk.gov.hmrc.ofstedformsfrontend.communication.FormType
 import uk.gov.hmrc.ofstedformsfrontend.marshallers.xml.{EnumMarshaller, XmlMarshaller}
 
 import scala.collection.immutable
 
 trait Form {
-  def toDocument(document: Document): DocumentFragment
+  def toDocument(implicit document: Document): DocumentFragment
 }
 
 
@@ -44,9 +43,8 @@ object ApplicationForm {
   implicit val marshaller: XmlMarshaller[ApplicationForm] = new XmlMarshaller[ApplicationForm] {
     override def marshall(obj: ApplicationForm)(implicit document: Document): Node = {
       createFragment(document) {
-        _.createElement("FormType") { element =>
-          element.appendChild(obj.form.toDocument(document))
-        }.createValue("FormId", obj.id)
+        _.createElement("FormType")( _.appendChild(obj.form.toDocument))
+          .createValue("FormId", obj.id)
           .createValue("CreatedBy", obj.createdBy)
           .createValue("CreatedDate", obj.createdDate)
           .createValue("Source", obj.source)

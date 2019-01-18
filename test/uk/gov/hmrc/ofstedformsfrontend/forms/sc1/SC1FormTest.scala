@@ -16,18 +16,110 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.forms.sc1
 
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.{OutputKeys, TransformerFactory}
+import java.io.StringWriter
+
+import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
+import javax.xml.transform.{OutputKeys, TransformerFactory}
 import org.joda.time.DateTime
-import org.scalatest.FunSuite
+import org.scalatest.matchers.{MatchResult, Matcher}
+import org.scalatest.{Matchers, WordSpec}
+import org.w3c.dom.{Document, Node, NodeList}
 import uk.gov.hmrc.ofstedformsfrontend.communication.SendApplicationForms
-import uk.gov.hmrc.ofstedformsfrontend.forms
 import uk.gov.hmrc.ofstedformsfrontend.forms._
-import uk.gov.hmrc.ofstedformsfrontend.marshallers.xml.XmlMarshaller
 
-class SC1FormTest extends FunSuite {
+import scala.annotation.tailrec
+
+class SC1FormTest extends WordSpec with Matchers {
+
+  implicit class NodeListExtension(nodeList: NodeList){
+    def toMap: Map[String, Seq[Node]] = {
+      @tailrec
+      def loop(index: Int, acc: Map[String, Seq[Node]]): Map[String, Seq[Node]] = {
+        if(index < nodeList.getLength){
+          val node = nodeList.item(index)
+          val name = node.getNodeName
+          println(s"$name '${node.getNodeValue}'")
+          loop(index + 1, acc.updated(name, acc.getOrElse(name, Seq.empty) :+ node))
+        } else {
+          acc
+        }
+      }
+      loop(0, Map.empty)
+    }
+  }
+
+  def sameAs(requirements: Document): Matcher[Document] = new Matcher[Document]{
+
+    def compareNodes(prefix: String, a: Node, b: Node): MatchResult = {
+      if(a.getNodeName == b.getNodeName){
+        val x = a.getChildNodes.toMap
+        val y = b.getChildNodes.toMap
+        val xElements = x.keySet
+        val yElements = y.keySet
+        val more = xElements.diff(yElements)
+        val less = yElements.diff(xElements)
+        if(more.nonEmpty || less.nonEmpty){
+          val redundant = if(more.nonEmpty) { "redundat elements " + more.mkString("{",",","}") } else {" "}
+          val missing = if(less.nonEmpty) { "missing elements" + less.mkString("{", ",", "}") } else { "" }
+          MatchResult.apply(
+            matches = false,
+            s"Documents have different $redundant $missing at $prefix",
+            s"Documents have identical keys at $prefix"
+          )
+        } else {
+          more.intersect(less).foldLeft[MatchResult](MatchResult(matches = true, "Nodes are equal", "Nodes are not equal")) {
+            case (prev, name) =>
+              println(name)
+              val result = compareNodeList(prefix + s".$name", x(name), y(name))
+              if(result.matches){
+                prev
+              } else {
+                result
+              }
+          }
+        }
+      } else {
+        MatchResult(
+          matches = false,
+          s"Node name ${a.getNodeName} is not equal ${b.getNodeName} at $prefix",
+          s"Node name ${b.getNodeName} is equal ${b.getNodeName} at $prefix"
+        )
+      }
+    }
+
+    def compareNodeList(prefix: String, a: Seq[Node], b: Seq[Node]): MatchResult = {
+      val redundant = a.foldLeft[MatchResult](MatchResult(matches = true, "Nodes are equal", "Nodes are not equal")) {
+        case (result, node) =>
+          b.foldLeft[MatchResult](result) {
+            case (outcome, x) =>
+              val comparision = compareNodes(prefix, node, x)
+              if(comparision.matches){
+                outcome
+              } else {
+                comparision
+              }
+          }
+      }
+      b.foldLeft[MatchResult](redundant) {
+        case (result, node) =>
+          b.foldLeft[MatchResult](result) {
+            case (outcome, x) =>
+              val comparision = compareNodes(prefix, node, x)
+              if(comparision.matches){
+                outcome
+              } else {
+                comparision
+              }
+          }
+      }
+    }
+
+    override def apply(left: Document): MatchResult = {
+      compareNodes(".", left.getDocumentElement, requirements.getDocumentElement)
+    }
+  }
 
   val typeOfApplication = new SCTypeOfApplicationType(
     ProvisionTypeType.ChildrensHome,
@@ -155,17 +247,34 @@ class SC1FormTest extends FunSuite {
     FormMetadata()
   )
 
-  val sendApplicationFormEvnelop = SendApplicationForms(Seq(form))
+  val sendApplicationFormEvelop = SendApplicationForms(Seq(form))
 
-  val builderFactory = DocumentBuilderFactory.newInstance()
-  val builder = builderFactory.newDocumentBuilder()
-  val document = sendApplicationFormEvnelop.toDocument(builder)
-  val transformerFactory = TransformerFactory.newInstance()
-  val transformer = transformerFactory.newTransformer()
-  transformer.setOutputProperty(OutputKeys.INDENT, "yes")
-  transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
-  val source = new DOMSource(document)
-  val target = new StreamResult(System.out)
-  transformer.transform(source, target)
+  val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
+  builderFactory.setIgnoringElementContentWhitespace(true)
+  val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
+  val document: Document = sendApplicationFormEvelop.toDocument(builder)
+
+  private val source: Document = builder.parse(ClassLoader.getSystemResourceAsStream("SC1-full.xml"))
+
+
+  "Form" should {
+    "create correct document" in {
+      document should sameAs(source)
+    }
+  }
+
+  def print(document: Document): Unit ={
+    val transformerFactory = TransformerFactory.newInstance()
+    val indentingTransformer = transformerFactory.newTransformer()
+    indentingTransformer.setOutputProperty(OutputKeys.INDENT, "yes")
+    indentingTransformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no")
+    indentingTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4")
+    val writer = new StringWriter()
+    val source = new DOMSource(document)
+    val target = new StreamResult(writer)
+
+    println(writer.toString)
+  }
+
 
 }

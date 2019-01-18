@@ -28,7 +28,7 @@ case class SC1Form(typeOfApplicationType: SCTypeOfApplicationType,
                    provision: Provision,
                    manager: Individual) extends Form {
 
-  override def toDocument(document: Document): DocumentFragment = {
+  override def toDocument(implicit document: Document): DocumentFragment = {
     val fragment = document.createDocumentFragment()
     val root = document.createElement(FormType.SC1.toString)
     fragment.appendChild(root)
