@@ -16,15 +16,20 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.controllers
 
-import play.api.mvc.Action
+import javax.inject.Inject
+import play.api.mvc.{Action, Request}
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import uk.gov.hmrc.ofstedformsfrontend.config.AppConfig
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.ofstedformsfrontend.views.html
 
 import scala.concurrent.Future
 
-class FormController extends FrontendController {
+class FormController @Inject()(val messagesApi: MessagesApi)
+                              (implicit config: AppConfig) extends FrontendController with I18nSupport {
 
-  def pendingForms() = Action.async(parse.empty){ implicit request =>
-    Future.successful(Ok("EXAMPLE"))
+  def pendingForms(): Action[Unit] = Action.async(parse.empty){ implicit request =>
+    Future.successful(Ok(html.forms_list()))
   }
 
 }
