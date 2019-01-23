@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.controllers
 
-import javax.inject.{Inject, Named}
+import javax.inject.{Inject, Named, Singleton}
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
@@ -25,12 +25,11 @@ import uk.gov.hmrc.play.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class AdminActionBuilder @Inject()(val authConnector: AuthConnector,
-                                   @Named("admins") admins: Set[String]) extends ActionBuilder[Request] with AuthorisedFunctions {
-
-  override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-    block(request)
-  }
+                                   @Named("admins") admins: Set[String],
+                                   cc: ControllerComponents)
+  extends ActionBuilderImpl[AnyContent](cc.parsers.default)(cc.executionContext) with AuthorisedFunctions {
 
   override protected def composeAction[A](action: Action[A]): Action[A] =
     new AdminAction[A](authConnector, admins, action)
@@ -41,10 +40,12 @@ class AdminAction[A](val authConnector: AuthConnector,
                      admins: Set[String],
                      action: Action[A]) extends Action[A] with AuthorisedFunctions {
 
-  private def extractHeaders[A](rh: Request[A]) =
+  private def extractHeaders(rh: RequestHeader) =
     HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, Some(rh.session), Some(rh))
 
   override def parser: BodyParser[A] = action.parser
+
+  override def executionContext: ExecutionContext = action.executionContext
 
   override def apply(request: Request[A]): Future[Result] = {
     authorised().retrieve(Retrievals.email) {
