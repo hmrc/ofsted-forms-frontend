@@ -27,7 +27,7 @@ class Module extends AbstractModule {
   @Named("admins")
   @Singleton
   def adminsFromConfig(configuration: Configuration): Set[String] = {
-    configuration.getStringList("ofsted-forms.admins")
+    configuration.getStringList("ofsted-forms.admins") // TODO on update to play 2.6 should be refactored to `get`
       .map(_.asScala.toSet)
       .getOrElse(throw new RuntimeException("there is no configuration in 'ofsted-forms.admins'"))
   }
