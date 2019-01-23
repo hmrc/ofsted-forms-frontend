@@ -26,8 +26,7 @@ import uk.gov.hmrc.play.HeaderCarrierConverter
 import scala.concurrent.{ExecutionContext, Future}
 
 class AdminActionBuilder @Inject()(val authConnector: AuthConnector,
-                                   @Named("admins") admins: Set[String])
-                                  (implicit ec: ExecutionContext) extends ActionBuilder[Request] with AuthorisedFunctions {
+                                   @Named("admins") admins: Set[String]) extends ActionBuilder[Request] with AuthorisedFunctions {
 
   override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
     block(request)
@@ -42,8 +41,8 @@ class AdminAction[A](val authConnector: AuthConnector,
                      admins: Set[String],
                      action: Action[A]) extends Action[A] with AuthorisedFunctions {
 
-  private def extractHeaders(rh: RequestHeader) =
-    HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, request = Some(rh))
+  private def extractHeaders[A](rh: Request[A]) =
+    HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, Some(rh.session), Some(rh))
 
   override def parser: BodyParser[A] = action.parser
 
@@ -58,7 +57,7 @@ class AdminAction[A](val authConnector: AuthConnector,
           Future.successful(Results.Forbidden("You are not on list of admins"))
         }
       case None =>
-        Future.successful(Results.Forbidden("You don't have email address"))
+        Future.successful(Results.Forbidden("You are not have email"))
     }
   }
 }
