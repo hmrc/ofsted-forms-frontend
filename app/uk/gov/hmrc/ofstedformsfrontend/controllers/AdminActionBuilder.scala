@@ -47,8 +47,6 @@ class AdminAction[A](val authConnector: AuthConnector,
   override def parser: BodyParser[A] = action.parser
 
   override def apply(request: Request[A]): Future[Result] = {
-    implicit val hc: HeaderCarrier = extractHeaders(request)
-    implicit val ec: ExecutionContext = action.executionContext
     authorised().retrieve(Retrievals.email) {
       case Some(email) =>
         if (admins.contains(email)) {
@@ -58,6 +56,6 @@ class AdminAction[A](val authConnector: AuthConnector,
         }
       case None =>
         Future.successful(Results.Forbidden("You are not have email"))
-    }
+    }(extractHeaders(request), action.executionContext)
   }
 }
