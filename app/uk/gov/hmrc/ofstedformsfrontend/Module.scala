@@ -18,8 +18,7 @@ package uk.gov.hmrc.ofstedformsfrontend
 
 import com.google.inject.{AbstractModule, Provides}
 import javax.inject.{Named, Singleton}
-import play.api.Configuration
-import scala.collection.JavaConverters._
+import play.api.{ConfigLoader, Configuration}
 
 class Module extends AbstractModule {
 
@@ -27,9 +26,7 @@ class Module extends AbstractModule {
   @Named("admins")
   @Singleton
   def adminsFromConfig(configuration: Configuration): Set[String] = {
-    configuration.getStringList("ofsted-forms.admins") // TODO on update to play 2.6 should be refactored to `get`
-      .map(_.asScala.toSet)
-      .getOrElse(throw new RuntimeException("there is no configuration in 'ofsted-forms.admins'"))
+    configuration.get[Set[String]]("ofsted-forms.admins")(ConfigLoader.seqStringLoader.map(_.toSet))
   }
 
   override def configure(): Unit = {
