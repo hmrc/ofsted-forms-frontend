@@ -28,7 +28,7 @@ class CheckAdminPass @Inject()(@Named("admins") admins: Set[String],
   override protected def filter[A](request: AuthenticatedRequest[A]): Future[Option[Result]] = Future.successful {
     val requester = request.requester
     if (admins.contains(requester.email)) {
-      None // process
+      None
     } else {
       Some(Results.Forbidden("You are not on list of admins"))
     }
