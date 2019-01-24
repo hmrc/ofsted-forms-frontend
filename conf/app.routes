@@ -1,3 +1,4 @@
 # microservice specific routes
 
+GET        /forms                     uk.gov.hmrc.ofstedformsfrontend.controllers.FormController.all
 GET        /forms/pending             uk.gov.hmrc.ofstedformsfrontend.controllers.FormController.pendingForms

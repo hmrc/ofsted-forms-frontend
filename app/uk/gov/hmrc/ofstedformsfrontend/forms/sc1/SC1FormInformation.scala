@@ -17,29 +17,29 @@
 package uk.gov.hmrc.ofstedformsfrontend.forms.sc1
 
 import org.w3c.dom.{Document, DocumentFragment}
-import uk.gov.hmrc.ofstedformsfrontend.communication.FormType
-import uk.gov.hmrc.ofstedformsfrontend.forms.Form
+import uk.gov.hmrc.ofstedformsfrontend.forms.FormKind
+import uk.gov.hmrc.ofstedformsfrontend.forms.envelop.FormInformation
 import uk.gov.hmrc.ofstedformsfrontend.marshallers.xml.XmlMarshaller
 
-case class SC1Form(typeOfApplicationType: SCTypeOfApplicationType,
-                   organisation: Organisation,
-                   nominated: Individual,
-                   premises: Premises,
-                   provision: Provision,
-                   manager: Individual) extends Form {
+case class SC1FormInformation(typeOfApplicationType: SCTypeOfApplicationType,
+                              organisation: Organisation,
+                              nominated: Individual,
+                              premises: Premises,
+                              provision: Provision,
+                              manager: Individual) extends FormInformation {
 
   override def toDocument(implicit document: Document): DocumentFragment = {
     val fragment = document.createDocumentFragment()
-    val root = document.createElement(FormType.SC1.toString)
+    val root = document.createElement(FormKind.SC1.toString)
     fragment.appendChild(root)
-    root.appendChild(SC1Form.marshaller.marshall(this)(document))
+    root.appendChild(SC1FormInformation.marshaller.marshall(this)(document))
     fragment
   }
 }
 
-object SC1Form {
-  implicit val marshaller: XmlMarshaller[SC1Form] = new XmlMarshaller[SC1Form] {
-    override def marshall(obj: SC1Form)(implicit document: Document): DocumentFragment = {
+object SC1FormInformation {
+  implicit val marshaller: XmlMarshaller[SC1FormInformation] = new XmlMarshaller[SC1FormInformation] {
+    override def marshall(obj: SC1FormInformation)(implicit document: Document): DocumentFragment = {
       createFragment(document){ fragment =>
         fragment.createValue("TypeOfApplication", obj.typeOfApplicationType)
           .createValue("Organisation", obj.organisation)

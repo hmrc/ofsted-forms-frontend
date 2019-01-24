@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.forms
+package uk.gov.hmrc.ofstedformsfrontend.forms.envelop
 
 import enumeratum._
 import org.joda.time.DateTime
@@ -23,13 +23,13 @@ import uk.gov.hmrc.ofstedformsfrontend.marshallers.xml.{EnumMarshaller, XmlMarsh
 
 import scala.collection.immutable
 
-trait Form {
+trait FormInformation {
   def toDocument(implicit document: Document): DocumentFragment
 }
 
 
 case class ApplicationForm(id: Int,
-                           form: Form,
+                           form: FormInformation,
                            createdBy: String,
                            createdDate: DateTime,
                            source: ApplicationSource,
