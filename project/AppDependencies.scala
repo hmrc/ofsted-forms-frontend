@@ -5,13 +5,18 @@ import sbt._
 
 object AppDependencies {
 
-  val compile = Seq(
+  object Versions {
+    val uniform: String = "0.2.4"
+    val enumeratum: String = "1.5.13"
+  }
 
+  val compile = Seq(
     "uk.gov.hmrc"             %% "govuk-template"           % "5.26.0-play-26",
     "uk.gov.hmrc"             %% "play-ui"                  % "7.27.0-play-26",
     "uk.gov.hmrc"             %% "bootstrap-play-26"        % "0.36.0",
-    "com.beachape"            %% "enumeratum"               % "1.5.13",
-    "com.beachape"            %% "enumeratum-play"          % "1.5.13" // waits for OF-74 to be merged to not conflict
+    "com.beachape"            %% "enumeratum"               % Versions.enumeratum,
+    "com.beachape"            %% "enumeratum-play"          % Versions.enumeratum,
+    "com.luketebbs.uniform"   %% "core"                     % Versions.uniform
   )
 
   val test = Seq(
