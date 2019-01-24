@@ -14,17 +14,30 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.ofstedformsfrontend.config.AppConfig
-@this(govuk_wrapper: govuk_wrapper)
+@import uk.gov.hmrc.ofstedformsfrontend.forms.GeneralForm
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages)
+@this(main_template: main_template)(implicit val messagesApi: MessagesApi)
 
-@contentHeader = {
-  <h1>@heading</h1>
+@(forms: Seq[GeneralForm])(implicit request: Request[_], messages: MessagesProvider)
+
+@main_template("Forms"){
+    <h1>Forms created</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <td>
+
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            @for(form <- forms){
+                <tr>
+                    <td>@form.id</td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
 }
-
-@mainContent = {
-  <p>@message</p>
-}
-
-@govuk_wrapper(title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)

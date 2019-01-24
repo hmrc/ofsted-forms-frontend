@@ -28,10 +28,11 @@ import org.scalatest.{Matchers, WordSpec}
 import org.w3c.dom.{Document, Node, NodeList}
 import uk.gov.hmrc.ofstedformsfrontend.communication.SendApplicationForms
 import uk.gov.hmrc.ofstedformsfrontend.forms._
+import uk.gov.hmrc.ofstedformsfrontend.forms.envelop._
 
 import scala.annotation.tailrec
 
-class SC1FormTest extends WordSpec with Matchers {
+class SC1FormInformationTest extends WordSpec with Matchers {
 
   implicit class NodeListExtension(nodeList: NodeList){
     def toMap: Map[String, Seq[Node]] = {
@@ -232,7 +233,7 @@ class SC1FormTest extends WordSpec with Matchers {
     receiveElectronicCommunication = false
   )
 
-  val sc1 = SC1Form(typeOfApplication, organization, nominated, premise, provision, manager)
+  val sc1 = SC1FormInformation(typeOfApplication, organization, nominated, premise, provision, manager)
 
   val form = ApplicationForm(
     id = 1,

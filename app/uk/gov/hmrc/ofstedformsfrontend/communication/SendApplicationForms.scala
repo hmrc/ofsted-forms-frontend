@@ -19,7 +19,8 @@ package uk.gov.hmrc.ofstedformsfrontend.communication
 import enumeratum._
 import javax.xml.parsers.DocumentBuilder
 import org.w3c.dom.Document
-import uk.gov.hmrc.ofstedformsfrontend.forms.{ApplicationForm, Form}
+import uk.gov.hmrc.ofstedformsfrontend.forms.GeneralForm
+import uk.gov.hmrc.ofstedformsfrontend.forms.envelop.ApplicationForm
 
 import scala.collection.immutable
 

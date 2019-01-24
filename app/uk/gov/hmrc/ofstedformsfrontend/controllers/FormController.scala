@@ -17,22 +17,28 @@
 package uk.gov.hmrc.ofstedformsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, MessagesControllerComponents}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
+import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, CheckAdminPass}
 import uk.gov.hmrc.ofstedformsfrontend.config.AppConfig
 import uk.gov.hmrc.ofstedformsfrontend.views.html
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
-
 @Singleton
 class FormController @Inject()(val authConnector: AuthConnector,
-                               adminAction: AdminActionBuilder,
+                               authenticate: AuthenticateActionBuilder,
+                               checkAdminPass: CheckAdminPass,
                                mcc: MessagesControllerComponents)
+                              (pending_forms_list: html.pending_forms_list,
+                               user_form_list: html.user_form_list)
                               (implicit config: AppConfig) extends FrontendController(mcc) with I18nSupport with AuthorisedFunctions {
 
-  def pendingForms(): Action[Unit] = adminAction.async(parse.empty) { implicit request =>
-    Future.successful(Ok(html.forms_list()))
+  def pendingForms(): Action[Unit] = (authenticate andThen checkAdminPass) (parse.empty) { implicit request =>
+    Ok(pending_forms_list())
+  }
+
+  def all(): Action[Unit] = authenticate(parse.empty) { implicit request =>
+    Ok(user_form_list(Seq.empty))
   }
 }
