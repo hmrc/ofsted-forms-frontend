@@ -10,7 +10,8 @@ object AppDependencies {
     "uk.gov.hmrc"             %% "govuk-template"           % "5.26.0-play-26",
     "uk.gov.hmrc"             %% "play-ui"                  % "7.27.0-play-26",
     "uk.gov.hmrc"             %% "bootstrap-play-26"        % "0.36.0",
-    "com.beachape"            %% "enumeratum"               % "1.5.13"
+    "com.beachape"            %% "enumeratum"               % "1.5.13",
+    "com.beachape"            %% "enumeratum-play"          % "1.5.13" // waits for OF-74 to be merged to not conflict
   )
 
   val test = Seq(

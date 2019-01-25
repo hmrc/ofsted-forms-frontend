@@ -15,6 +15,10 @@
  *@
 
 @import uk.gov.hmrc.ofstedformsfrontend.forms.GeneralForm
+@import uk.gov.hmrc.ofstedformsfrontend.forms.FormKind
+@import uk.gov.hmrc.ofstedformsfrontend.controllers.routes
+@import uk.gov.hmrc.ofstedformsfrontend.controllers.FormController
+@import play.twirl.api.HtmlFormat
 
 @this(main_template: main_template)(implicit val messagesApi: MessagesApi)
 
@@ -23,18 +27,30 @@
 @main_template("Forms"){
     <h1>Forms created</h1>
 
+    @for(kind <- FormKind.values){
+        @helper.form(action = routes.FormsController.create()){
+            @helper.CSRF.formField
+            <input type="hidden" name="kind" value="@kind.toString">
+            <input type="submit" value="@kind.toString">
+        }
+
+    }
+
+    </form>
     <table>
         <thead>
             <tr>
-                <td>
-
-                </td>
+                <td>Form Identifier</td>
+                <td>Created at</td>
+                <td>Submitted at</td>
             </tr>
         </thead>
         <tbody>
             @for(form <- forms){
                 <tr>
-                    <td>@form.id</td>
+                    <td><a href="@routes.FormController.show(form.id)">@form.id</a></td>
+                    <td>@form.created.moment</td>
+                    <td>@{form.submitted.fold(HtmlFormat.empty)(occurence => Html(occurence.moment.toString)) }</td>
                 </tr>
             }
 
