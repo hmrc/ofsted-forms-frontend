@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.forms
 
+import java.time.ZonedDateTime
 import java.util.UUID
 
 import enumeratum._
+import play.api.mvc.PathBindable
 import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticateUser
 
 import scala.collection.immutable
@@ -27,16 +29,17 @@ case class FormId(value: UUID)
 
 object FormId {
   def apply(): FormId = new FormId(UUID.randomUUID())
+
+  implicit val pathBindable: PathBindable[FormId] = PathBindable.bindableUUID.transform[FormId](apply, _.value)
 }
 
 sealed trait FormKind extends EnumEntry
 
-object FormKind extends Enum[FormKind] {
+object FormKind extends PlayEnum[FormKind] {
   override def values: immutable.IndexedSeq[FormKind] = findValues
 
   case object SC1 extends FormKind
 }
-
 
 trait GeneralForm {
   def id: FormId
@@ -60,10 +63,23 @@ object GeneralForm {
   )
 }
 
+case class SubmittedForm(id: FormId, kind: FormKind, created: Occurrence, submission: Occurrence) extends GeneralForm {
+  override val submitted: Option[Occurrence] = Some(submission)
+
+  override def completed: Option[Occurrence] = None
+
+  override def accepted: Option[Occurrence] = None
+}
+
 case class Draft(id: FormId, kind: FormKind, created: Occurrence) extends GeneralForm {
   override def submitted: Option[Occurrence] = None
 
   override def completed: Option[Occurrence] = ???
 
   override def accepted: Option[Occurrence] = None
+
+  def submit(submitter: AuthenticateUser): SubmittedForm = {
+    val submission = Occurrence(submitter, ZonedDateTime.now())
+    SubmittedForm(id, kind, created, submission)
+  }
 }
