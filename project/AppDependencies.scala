@@ -19,8 +19,8 @@ object AppDependencies {
     "org.jsoup"               %  "jsoup"                    % "1.10.2"                % "test",
     "com.typesafe.play"       %% "play-test"                % current                 % "test",
     "org.pegdown"             %  "pegdown"                  % "1.6.0"                 % "test, it",
-    "uk.gov.hmrc"             %% "service-integration-test" % "0.2.0"                 % "test, it",
-    "org.scalatestplus.play"  %% "scalatestplus-play"       % "2.0.0"                 % "test, it"
+    "uk.gov.hmrc"             %% "service-integration-test" % "0.4.0-play-26"         % "test, it",
+    "org.scalatestplus.play"  %% "scalatestplus-play"       % "3.1.0"                 % "test, it"
   )
 
 }
