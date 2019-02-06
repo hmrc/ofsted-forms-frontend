@@ -19,22 +19,21 @@ package uk.gov.hmrc.ofstedformsfrontend.uniform
 import cats.Monoid
 import cats.data._
 import cats.implicits._
+import ltbs.uniform._
+import ltbs.uniform.web._
 import org.atnos.eff._
 import org.atnos.eff.all.{none => _, _}
 import org.atnos.eff.syntax.all._
-import play.api.data.Form
-import ltbs.uniform._
 import play.api._
+import play.api.data.Form
 import play.api.mvc._
 import play.twirl.api.Html
-import ltbs.uniform._
-import ltbs.uniform.web._
-import scala.concurrent.{ ExecutionContext, Future }
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait PlayInterpreter extends {
   self: BaseController =>
+
 
   def messages(request: Request[AnyContent]): Messages
 
@@ -85,25 +84,20 @@ trait PlayInterpreter extends {
     type _state[Q] = State[(DB, List[String]), ?] |= Q
     type _either[Q] = Either[Result, ?] |= Q
 
-    def useForm[C, U](
-                       wmFormC: PlayForm[C]
-                     )(
-                       implicit member: Member.Aux[UniformAsk[C, ?], R, U],
-                       state: _state[U],
-                       eitherM: _either[U],
-                       request: Request[AnyContent],
-                       targetId: String
-                     ): Eff[U, A] = useFormMap(_ => wmFormC)
+    def useForm[C, U](wmFormC: PlayForm[C])
+                     (implicit member: Member.Aux[UniformAsk[C, ?], R, U],
+                      state: _state[U],
+                      eitherM: _either[U],
+                      request: Request[AnyContent],
+                      targetId: String): Eff[U, A] = useFormMap(_ => wmFormC)
 
-    def useFormMap[C, U](
-                          wmFormC: String => PlayForm[C]
-                        )(
-                          implicit member: Member.Aux[UniformAsk[C, ?], R, U],
-                          stateM: _state[U],
-                          eitherM: _either[U],
-                          request: Request[AnyContent],
-                          targetId: String
-                        ): Eff[U, A] = e.translate(
+    def useFormMap[C, U](wmFormC: String => PlayForm[C])
+                        (implicit member: Member.Aux[UniformAsk[C, ?], R, U],
+                         stateM: _state[U],
+                         eitherM: _either[U],
+                         request: Request[AnyContent],
+                         targetId: String): Eff[U, A] = e.translate[UniformAsk[C, ?], U](
+
       new Translate[UniformAsk[C, ?], U] {
         def apply[X](ax: UniformAsk[C, X]): Eff[U, X] = {
           val wmForm: PlayForm[X] = wmFormC(ax.key).imap(_.asInstanceOf[X])(_.asInstanceOf[C])
@@ -197,17 +191,16 @@ trait PlayInterpreter extends {
 
   implicit val scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
 
-  def runWeb[A](
-                 program: Eff[PlayStack, A],
-                 persistence: Persistence,
-                 purgeJourneyOnCompletion: Boolean = true
-               )(
-                 terminalFold: A => Future[Result]
-               )(implicit ec: ExecutionContext): Future[Result] =
+  def runWeb[A](program: Eff[PlayStack, A],
+                persistence: Persistence,
+                purgeJourneyOnCompletion: Boolean = true)
+               (terminalFold: A => Future[Result])(implicit ec: ExecutionContext, witness: Either[Result, ?] |= PlayStack): Future[Result] = {
+
+
     persistence.dataGet.map {
       data =>
         program
-          .runEither
+          .runEither[Result](witness)
           .runState((data, List.empty[String]))
           .run
     } >>= {
@@ -219,4 +212,5 @@ trait PlayInterpreter extends {
           persistence.dataPut(newDb) >> terminalFold(a)
       }
     }
+  }
 }
