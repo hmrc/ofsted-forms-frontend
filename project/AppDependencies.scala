@@ -17,7 +17,8 @@ object AppDependencies {
     "com.beachape"            %% "enumeratum"               % Versions.enumeratum,
     "com.beachape"            %% "enumeratum-play"          % Versions.enumeratum,
     "com.luketebbs.uniform"   %% "core"                     % Versions.uniform,
-    "com.luketebbs.uniform"   %% "interpreter-play26"       % Versions.uniform
+    "com.luketebbs.uniform"   %% "interpreter-play26"       % Versions.uniform,
+    "com.luketebbs.uniform"   %% "govuk-widgets"            % Versions.uniform
   )
 
   val test = Seq(
