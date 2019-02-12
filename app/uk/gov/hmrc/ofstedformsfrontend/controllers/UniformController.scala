@@ -17,9 +17,8 @@
 package uk.gov.hmrc.ofstedformsfrontend.controllers
 
 import ltbs.uniform.interpreters.playframework._
-import cats.Monoid
-import cats.data.Validated
-import cats.implicits._
+import cats._
+import cats.data._
 
 import concurrent.{ExecutionContext, Future}
 import org.atnos.eff._
@@ -27,34 +26,27 @@ import play.api._
 import mvc._
 import play.api.data._
 import Forms._
-import ltbs.uniform.ErrorTree
-import ltbs.uniform.web.Messages
+import ltbs.uniform._
+import ltbs.uniform.web._
 import play.api.i18n.I18nSupport
 import play.twirl.api.Html
 import uk.gov.hmrc.ofstedformsfrontend.examples.GreasySpoon
 import uk.gov.hmrc.ofstedformsfrontend.examples.GreasySpoon.GreasyStack
 
-trait WebMonadForm[T] {
-  def encode(in: T): Encoded
-
-  def decode(out: Encoded): T
-
-  def playForm(key: String,
-               validation: T => Validated[ValidationError, T]): Form[T]
-
-  def render(key: String,
-             existing: ValidatedData[T],
-             request: Request[AnyContent]): Html
-}
-
 class UniformController(mcc: MessagesControllerComponents)
                        (implicit executionContext: ExecutionContext) extends AbstractController(mcc) with PlayInterpreter with I18nSupport {
 
-  val booleanForm: WebMonadForm[Boolean] = new WebMonadForm[Boolean] {
+  val booleanForm: PlayForm[Boolean] = new PlayForm[Boolean] {
 
-    def decode(out: Encoded): Boolean = out == "true"
 
-    def encode(in: Boolean): Encoded = in.toString
+    override def encode(in: Boolean): Encoded = ???
+
+    override def render(key: String, existing: Option[Encoded], data: Request[AnyContent], errors: ErrorTree): Html = ???
+
+    override def receiveInput(data: Request[AnyContent]): Encoded = ???
+
+    override def decode(out: Encoded): Either[ErrorTree, Boolean] = ???
+
 
     def playForm(key: String, validation: Boolean => Validated[ValidationError, Boolean]): Form[Boolean] =
       Form(single(key -> boolean))
@@ -69,11 +61,16 @@ class UniformController(mcc: MessagesControllerComponents)
     }
   }
 
-  val intForm: WebMonadForm[Int] = new WebMonadForm[Int] {
+  val intForm: PlayForm[Boolean] = new PlayForm[Boolean] {
 
-    def decode(out: Encoded): Int = out.toInt
 
-    def encode(in: Int): Encoded = in.toString
+    override def render(key: String, existing: Option[Encoded], data: Request[AnyContent], errors: ErrorTree): Html = ???
+
+    override def receiveInput(data: Request[AnyContent]): Encoded = ???
+
+    override def encode(in: Boolean): Encoded = ???
+
+    override def decode(out: Encoded): Either[ErrorTree, Boolean] = ???
 
     def playForm(key: String, validation: Int => Validated[ValidationError, Int]): Form[Int] =
       Form(single(key -> number))
@@ -90,7 +87,9 @@ class UniformController(mcc: MessagesControllerComponents)
 
   type CombinedStack = FxAppend[GreasyStack, PlayStack]
 
-  val convertedProgram = GreasySpoon.greasySpoon[CombinedStack]
+  implicit val targetId: String = "uniform-example"
+
+  def convertedProgram(implicit request: Request[AnyContent]) = GreasySpoon.greasySpoon[CombinedStack]
     .useForm(intForm)      // map Int fields
     .useForm(booleanForm)  // map Boolean fields
 
