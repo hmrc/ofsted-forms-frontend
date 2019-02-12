@@ -14,5 +14,6 @@ lazy val microservice = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
+  .settings(scalacOptions += "-Ypartial-unification")
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3")
