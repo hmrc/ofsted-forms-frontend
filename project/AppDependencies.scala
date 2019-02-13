@@ -6,7 +6,7 @@ import sbt._
 object AppDependencies {
 
   object Versions {
-    val uniform: String = "0.2.4"
+    val uniform: String = "0.3.0"
     val enumeratum: String = "1.5.13"
   }
 
@@ -16,7 +16,9 @@ object AppDependencies {
     "uk.gov.hmrc"             %% "bootstrap-play-26"        % "0.36.0",
     "com.beachape"            %% "enumeratum"               % Versions.enumeratum,
     "com.beachape"            %% "enumeratum-play"          % Versions.enumeratum,
-    "com.luketebbs.uniform"   %% "core"                     % Versions.uniform
+    "com.luketebbs.uniform"   %% "core"                     % Versions.uniform,
+    "com.luketebbs.uniform"   %% "interpreter-play26"       % Versions.uniform,
+    "com.luketebbs.uniform"   %% "govuk-widgets"            % Versions.uniform
   )
 
   val test = Seq(

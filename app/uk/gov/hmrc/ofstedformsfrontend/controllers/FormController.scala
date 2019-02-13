@@ -38,7 +38,7 @@ class DraftRequest[A](val form: Draft, request: AuthenticatedRequest[A]) extends
 class FormController @Inject()(mcc: MessagesControllerComponents,
                                formRepository: FormRepository,
                                authenticate: AuthenticateActionBuilder)
-                              (form_view: html.form_view) extends FrontendController(mcc) with I18nSupport {
+                              (form_view: html.form_view) extends AbstractController(mcc) with I18nSupport {
 
   def fetchForm(id: FormId) = new ActionRefiner[AuthenticatedRequest, FormRequest] {
     /**

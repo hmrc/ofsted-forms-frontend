@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.ofstedformsfrontend.forms.GeneralForm
-@import uk.gov.hmrc.ofstedformsfrontend.controllers.routes._
+package uk.gov.hmrc.ofstedformsfrontend.uniform
 
-@this(main_template: main_template)
+import org.atnos.eff._
+import ltbs.uniform._
 
-@(form: GeneralForm)(implicit request: Request[_], messages: Messages)
+case class Pizza(size: Int, toppings: List[String], base: Int)
 
-@main_template(s"@{form.kind} Form") {
- <a href="@FormsController.all()">All forms</a>
- <h1>Form @form.kind - @form.id</h1>
+class ExampleProgram {
 
- @helper.form(FormController.submmision(form.id)){
-   @helper.CSRF.formField
-   <input type="submit" value="Submit" />
- }
+  def intProgram[Stack : _uniform[Int, ?]]: Eff[Stack, Int] = for {
+    value <- uask[Stack, Int]("favouriteNumber")
+  } yield value
+
+  def pizzaProgram[Stack: _uniform[Int, ?] : _uniform[List[String], ?]]: Eff[Stack, Pizza] = for {
+    size <- uask[Stack, Int]("size")
+    toppings <- uask[Stack, List[String]]("toppings")
+    base <- uask[Stack, Int]("base")
+  } yield Pizza(size, toppings, base)
 }
-
-
