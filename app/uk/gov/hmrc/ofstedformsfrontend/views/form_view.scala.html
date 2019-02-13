@@ -15,17 +15,17 @@
  *@
 
 @import uk.gov.hmrc.ofstedformsfrontend.forms.GeneralForm
-@import uk.gov.hmrc.ofstedformsfrontend.controllers._
+@import uk.gov.hmrc.ofstedformsfrontend.controllers.routes._
 
 @this(main_template: main_template)
 
 @(form: GeneralForm)(implicit request: Request[_], messages: Messages)
 
 @main_template(s"@{form.kind} Form") {
- <a href="@routes.FormsController.all()">All forms</a>
+ <a href="@FormsController.all()">All forms</a>
  <h1>Form @form.kind - @form.id</h1>
 
- @helper.form(routes.FormController.submmision(form.id)){
+ @helper.form(FormController.submmision(form.id)){
    @helper.CSRF.formField
    <input type="submit" value="Submit" />
  }

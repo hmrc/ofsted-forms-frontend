@@ -59,34 +59,6 @@ class UniformController @Inject()(mcc: MessagesControllerComponents)
                                  (chrome: html.FormChrome)
                                  (implicit executionContext: ExecutionContext) extends AbstractController(mcc) with PlayInterpreter with I18nSupport {
 
-//  val booleanForm: PlayForm[Boolean] = new PlayForm[Boolean] {
-//
-//    override def render(key: String, existing: Option[Encoded], data: Request[AnyContent], errors: ErrorTree): Html = {
-//      Html(s"INT FORM INPUT")
-//    }
-//
-//    override def receiveInput(data: Request[AnyContent]): Encoded = ???
-//
-//    override def encode(in: Boolean): Encoded = ???
-//
-//    override def decode(out: Encoded): Either[ErrorTree, Boolean] = ???
-//
-//  }
-//
-//  val intForm: PlayForm[Int] = new PlayForm[Int] {
-//
-//    override def render(key: String, existing: Option[Encoded], data: Request[AnyContent], errors: ErrorTree): Html = {
-//      Html(s"INT FORM INPUT")
-//    }
-//
-//    override def receiveInput(data: Request[AnyContent]): Encoded = ???
-//
-//    override def encode(in: Int): Encoded = ???
-//
-//    override def decode(out: Encoded): Either[ErrorTree, Int] = ???
-//
-//  }
-
   type CombinedStack = FxAppend[GreasyStack, PlayStack]
 
   def convertedProgram(implicit request: Request[AnyContent], targetId: String) ={
