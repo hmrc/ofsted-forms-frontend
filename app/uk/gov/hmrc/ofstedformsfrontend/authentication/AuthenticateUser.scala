@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.config
+package uk.gov.hmrc.ofstedformsfrontend.authentication
 
-import javax.inject.{Inject, Singleton}
-import play.api.i18n.MessagesApi
-import play.api.mvc.Request
-import play.twirl.api.Html
-import uk.gov.hmrc.ofstedformsfrontend.views.html
-import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
-
-@Singleton
-class ErrorHandler @Inject()(error_template: html.error_template, val messagesApi: MessagesApi) extends FrontendErrorHandler {
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]): Html =
-    error_template(pageTitle, heading, message)
-}
+/**
+  * Representation of authenticated user
+  * @param email - identifier delivered from auth
+  */
+case class AuthenticateUser(email: String)

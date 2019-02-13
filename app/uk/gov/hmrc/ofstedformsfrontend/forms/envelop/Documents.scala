@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.forms
+package uk.gov.hmrc.ofstedformsfrontend.forms.envelop
 
 import org.w3c.dom.{Document, Node}
 import uk.gov.hmrc.ofstedformsfrontend.marshallers.xml.XmlMarshaller
