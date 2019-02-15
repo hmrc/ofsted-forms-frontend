@@ -1,0 +1,59 @@
+@*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.ofstedformsfrontend.forms.GeneralForm
+@import uk.gov.hmrc.ofstedformsfrontend.forms.FormKind
+@import uk.gov.hmrc.ofstedformsfrontend.controllers.routes
+@import uk.gov.hmrc.ofstedformsfrontend.controllers.FormController
+@import play.twirl.api.HtmlFormat
+
+@this(main_template: main_template)(implicit val messagesApi: MessagesApi)
+
+@(forms: Seq[GeneralForm])(implicit request: Request[_], messages: MessagesProvider)
+
+@main_template("Forms"){
+    <h1>Forms created</h1>
+
+    @for(kind <- FormKind.values){
+        @helper.form(action = routes.FormsController.create()){
+            @helper.CSRF.formField
+            <input type="hidden" name="kind" value="@kind.toString">
+            <input type="submit" value="@kind.toString">
+        }
+
+    }
+
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <td>Form Identifier</td>
+                <td>Created at</td>
+                <td>Submitted at</td>
+            </tr>
+        </thead>
+        <tbody>
+            @for(form <- forms){
+                <tr>
+                    <td><a href="@routes.FormController.show(form.id)">@form.id</a></td>
+                    <td>@form.created.moment</td>
+                    <td>@{form.submitted.fold(HtmlFormat.empty)(occurence => Html(occurence.moment.toString)) }</td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}

@@ -1,3 +1,13 @@
 # microservice specific routes
 
-GET        /forms/pending             uk.gov.hmrc.ofstedformsfrontend.controllers.FormController.pendingForms
+GET         /forms                       uk.gov.hmrc.ofstedformsfrontend.controllers.FormsController.all
+POST        /forms                       uk.gov.hmrc.ofstedformsfrontend.controllers.FormsController.create
+GET         /forms/pending               uk.gov.hmrc.ofstedformsfrontend.controllers.FormsController.pendingForms
+
+GET         /forms/:id                   uk.gov.hmrc.ofstedformsfrontend.controllers.FormController.show(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
+POST        /forms/:id/submission        uk.gov.hmrc.ofstedformsfrontend.controllers.FormController.submmision(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
+
+
+GET         /uniform/                    uk.gov.hmrc.ofstedformsfrontend.controllers.UniformController.form(key = "")
+GET         /uniform/*key                uk.gov.hmrc.ofstedformsfrontend.controllers.UniformController.form(key)
+POST        /uniform/*key                uk.gov.hmrc.ofstedformsfrontend.controllers.UniformController.form(key)

@@ -16,23 +16,70 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, MessagesControllerComponents}
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.ofstedformsfrontend.config.AppConfig
+import javax.inject.Inject
+import play.api.i18n.I18nSupport
+import play.api.mvc._
+import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, AuthenticatedRequest}
+import uk.gov.hmrc.ofstedformsfrontend.forms.{Draft, FormId, FormRepository, GeneralForm}
 import uk.gov.hmrc.ofstedformsfrontend.views.html
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.{Failure, Success}
 
-@Singleton
-class FormController @Inject()(val authConnector: AuthConnector,
-                               adminAction: AdminActionBuilder,
-                               mcc: MessagesControllerComponents)
-                              (implicit config: AppConfig) extends FrontendController(mcc) with I18nSupport with AuthorisedFunctions {
+class FormRequest[A](val form: GeneralForm, request: AuthenticatedRequest[A]) extends WrappedRequest[A](request){
+  def requester = request.requester
+}
 
-  def pendingForms(): Action[Unit] = adminAction.async(parse.empty) { implicit request =>
-    Future.successful(Ok(html.forms_list()))
+class DraftRequest[A](val form: Draft, request: AuthenticatedRequest[A]) extends WrappedRequest[A](request) {
+  def requester = request.requester
+}
+
+class FormController @Inject()(mcc: MessagesControllerComponents,
+                               formRepository: FormRepository,
+                               authenticate: AuthenticateActionBuilder)
+                              (form_view: html.form_view) extends AbstractController(mcc) with I18nSupport {
+
+  def fetchForm(id: FormId) = new ActionRefiner[AuthenticatedRequest, FormRequest] {
+    /**
+      * FIXME on scala 2.12 here should be used Future#transform(Try[_] => Try[_]) instead manual crafting promise
+      */
+    override protected def refine[A](request: AuthenticatedRequest[A]): Future[Either[Result, FormRequest[A]]] = {
+      val promise = Promise[Either[Result, FormRequest[A]]]
+      formRepository.find(id).onComplete {
+        case Success(value) => promise.success(Right(new FormRequest[A](value, request)))
+        case Failure(e: NoSuchElementException) => promise.success(Left(Results.NotFound(e.getMessage)))
+        case Failure(_) => promise.success(Left(Results.InternalServerError))
+      }(executionContext)
+      promise.future
+    }
+
+    override protected def executionContext: ExecutionContext = mcc.executionContext
+  }
+
+  def fetchDraft(id: FormId) = new ActionRefiner[AuthenticatedRequest, DraftRequest] {
+    /**
+      * FIXME on scala 2.12 here should be used Future#transform(Try[_] => Try[_]) instead manual crafting promise
+      */
+    override protected def refine[A](request: AuthenticatedRequest[A]): Future[Either[Result, DraftRequest[A]]] = {
+      val promise = Promise[Either[Result, DraftRequest[A]]]
+      formRepository.findDraft(id).onComplete {
+        case Success(value) => promise.success(Right(new DraftRequest[A](value, request)))
+        case Failure(e: NoSuchElementException) => promise.success(Left(Results.NotFound(e.getMessage)))
+        case Failure(_) => promise.success(Left(Results.InternalServerError))
+      }(executionContext)
+      promise.future
+    }
+
+    override protected def executionContext: ExecutionContext = mcc.executionContext
+  }
+
+  def show(id: FormId) = (authenticate andThen fetchForm(id))(parse.empty) { implicit request =>
+    Ok(form_view(request.form))
+  }
+
+  def submmision(id: FormId) = (authenticate andThen fetchDraft(id)){ implicit request =>
+    formRepository.save(request.form.submit(request.requester))
+    SeeOther(routes.FormsController.all().absoluteURL())
   }
 }

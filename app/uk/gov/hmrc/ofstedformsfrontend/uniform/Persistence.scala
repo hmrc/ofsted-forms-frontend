@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.config
+package uk.gov.hmrc.ofstedformsfrontend.uniform
 
-import javax.inject.{Inject, Singleton}
-import play.api.i18n.MessagesApi
-import play.api.mvc.Request
-import play.twirl.api.Html
-import uk.gov.hmrc.ofstedformsfrontend.views.html
-import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
+import scala.concurrent.Future
 
-@Singleton
-class ErrorHandler @Inject()(error_template: html.error_template, val messagesApi: MessagesApi) extends FrontendErrorHandler {
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]): Html =
-    error_template(pageTitle, heading, message)
+trait Persistence {
+  def dataGet: Future[DB]
+  def dataPut(dataIn: DB): Future[Unit]
 }

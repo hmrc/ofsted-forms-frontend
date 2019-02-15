@@ -15,16 +15,16 @@
  *@
 
 @import uk.gov.hmrc.ofstedformsfrontend.config.AppConfig
-@this(govuk_wrapper: govuk_wrapper)
+@this(main_template: main_template)
+@()(implicit request: Request[_], messages: Messages)
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages)
-
-@contentHeader = {
-  <h1>@heading</h1>
+@main_template("Pending forms list") {
+    <h1>Pending forms</h1>
+    <ul>
+        <li>Form 1</li>
+        <li>Form 2</li>
+        <li>Form 3</li>
+        <li>Form 4</li>
+        <li>Form 5</li>
+    </ul>
 }
-
-@mainContent = {
-  <p>@message</p>
-}
-
-@govuk_wrapper(title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)

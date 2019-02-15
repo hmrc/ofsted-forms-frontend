@@ -21,10 +21,11 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 import org.joda.time.DateTime
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, Ignore, Matchers}
 import uk.gov.hmrc.ofstedformsfrontend.forms.sc1.{Address, Addresses}
 
-class Example extends FlatSpec {
+@Ignore
+class Example extends FlatSpec with Matchers {
 
   val address1 = Address(None, "Example 1", "Example 2", None, "Worthing", "UK", "BN11-1NX", "Description", "Code", None, Some(DateTime.now()), Some(DateTime.now()))
   val address2 = Address(None, "Example 1", "Example 2", None, "Worthing", "UK", "BN11-1NX", "Description", "Code", None, Some(DateTime.now()), Some(DateTime.now()))
@@ -41,5 +42,4 @@ class Example extends FlatSpec {
   val source = new DOMSource(document)
   val target = new StreamResult(System.out)
   transformer.transform(source, target)
-
 }

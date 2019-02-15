@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.config
+package uk.gov.hmrc.ofstedformsfrontend.uniform
 
-import javax.inject.{Inject, Singleton}
-import play.api.i18n.MessagesApi
-import play.api.mvc.Request
-import play.twirl.api.Html
-import uk.gov.hmrc.ofstedformsfrontend.views.html
-import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
+import org.atnos.eff._
+import ltbs.uniform._
 
-@Singleton
-class ErrorHandler @Inject()(error_template: html.error_template, val messagesApi: MessagesApi) extends FrontendErrorHandler {
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]): Html =
-    error_template(pageTitle, heading, message)
+case class Pizza(size: Int, toppings: List[String], base: Int)
+
+class ExampleProgram {
+
+  def intProgram[Stack : _uniform[Int, ?]]: Eff[Stack, Int] = for {
+    value <- uask[Stack, Int]("favouriteNumber")
+  } yield value
+
+  def pizzaProgram[Stack: _uniform[Int, ?] : _uniform[List[String], ?]]: Eff[Stack, Pizza] = for {
+    size <- uask[Stack, Int]("size")
+    toppings <- uask[Stack, List[String]]("toppings")
+    base <- uask[Stack, Int]("base")
+  } yield Pizza(size, toppings, base)
 }
