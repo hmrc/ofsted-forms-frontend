@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.marshallers.xml
 
+import java.time.LocalDate
+import java.time.format.{DateTimeFormatter, FormatStyle}
+import java.util.Formatter
+
 import enumeratum.EnumEntry
 import enumeratum.values.IntEnumEntry
 import org.joda.time.{DateTime, DateTimeZone}
@@ -106,6 +110,15 @@ object XmlMarshaller {
 
     override def marshall(obj: DateTime)(implicit document: Document): Node = {
       document.createTextNode(obj.toString(format))
+    }
+  }
+
+  implicit val localDateMarshaller: XmlMarshaller[LocalDate] = new XmlMarshaller[LocalDate] {
+
+    private val format = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+
+    override def marshall(obj: LocalDate)(implicit document: Document): Node = {
+      document.createTextNode(format.format(obj))
     }
   }
 

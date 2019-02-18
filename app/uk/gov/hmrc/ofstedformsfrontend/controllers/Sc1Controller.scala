@@ -16,58 +16,53 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.controllers
 
-import java.util.concurrent.atomic.AtomicReference
 
-import ltbs.uniform.interpreters.playframework._
+import uk.gov.hmrc.ofstedformsfrontend.forms.sc1.ProvisionTypeType
+import uk.gov.hmrc.ofstedformsfrontend.forms.sc1.SectorType
+import uk.gov.hmrc.ofstedformsfrontend.forms.sc1.OwnershipType
+import uk.gov.hmrc.ofstedformsfrontend.journeys.Sc1Journey
+
+import java.time.LocalDate
 import cats._
 import cats.data._
-
 import concurrent.{ExecutionContext, Future}
 import org.atnos.eff._
-import play.api._
-import mvc._
-import play.api.data._
-import Forms._
 import javax.inject.{Inject, Singleton}
-import ltbs.uniform.{ErrorTree, _}
+import ltbs.uniform._
 import ltbs.uniform.web._
+import ltbs.uniform.interpreters.playframework._
+import play.api._
+import play.api.mvc._
+import play.api.data._
 import play.api.i18n.I18nSupport
 import play.api.routing.Router
 import play.twirl.api.Html
-import uk.gov.hmrc.ofstedformsfrontend.examples.GreasySpoon
-import uk.gov.hmrc.ofstedformsfrontend.examples.GreasySpoon.GreasyStack
+
 import uk.gov.hmrc.ofstedformsfrontend.views._
 
-import scala.util.Try
 
-object MemoryPersistence extends Persistence {
-  private val storage = new AtomicReference(Map.empty[String, String])
 
-  override def dataGet: Future[DB] = {
-    Future.successful(storage.get())
-  }
-
-  override def dataPut(dataIn: DB): Future[Unit] = {
-    storage.set(dataIn)
-    Future.successful(Unit)
-  }
-}
-
+import ltbs.uniform.web.parser._
+import ltbs.uniform.widgets.govuk.{html => uniformHtml, _}
 
 
 @Singleton
-class UniformController @Inject()(mcc: MessagesControllerComponents)
-                                 (chrome: html.FormChrome)
-                                 (implicit executionContext: ExecutionContext) extends AbstractController(mcc) with PlayInterpreter with I18nSupport {
+class Sc1Controller @Inject()(mcc: MessagesControllerComponents)
+                   (chrome: html.FormChrome)
+                   (implicit executionContext: ExecutionContext) extends AbstractController(mcc) with PlayInterpreter with I18nSupport {
 
-  type CombinedStack = FxAppend[GreasyStack, PlayStack]
+
+  type CombinedStack = FxAppend[Sc1Journey.Stack, PlayStack]
 
   def convertedProgram(implicit request: Request[AnyContent], targetId: String) ={
-    import ltbs.uniform.web.parser._
-    import ltbs.uniform.widgets.govuk._
-    GreasySpoon.greasySpoon[CombinedStack]
-      .useForm(PlayForm.automatic[Int])      // map Int fields
-      .useForm(PlayForm.automatic[Boolean])  // map Boolean fields
+    Sc1Journey.program2[CombinedStack]
+      .useForm(PlayForm.automatic[ProvisionTypeType])
+      .useForm(PlayForm.automatic[SectorType])
+      .useForm(PlayForm.automatic[OwnershipType])
+      .useForm(PlayForm.automatic[Int])
+      .useForm(PlayForm.automatic[Boolean])
+      .useForm(PlayForm.automatic[Option[String]])
+      .useForm(PlayForm.automatic[LocalDate])
   }
 
   def messages(request: Request[AnyContent]): Messages = {
@@ -98,5 +93,7 @@ class UniformController @Inject()(mcc: MessagesControllerComponents)
       Future.successful(Results.Ok(result.toString))
     }
   }
-}
 
+
+
+}

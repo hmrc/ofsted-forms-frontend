@@ -16,43 +16,16 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.forms.sc1
 
+import java.time.LocalDate
 import enumeratum._
-import enumeratum.values.{IntEnum, IntEnumEntry}
-import org.joda.time.DateTime
 import org.w3c.dom.{Document, DocumentFragment}
 import uk.gov.hmrc.ofstedformsfrontend.marshallers.xml.{EnumMarshaller, IntEnumMarshaller, XmlMarshaller}
 
 import scala.collection.immutable
 
-case class SCTypeOfApplicationType(applicationType: ProvisionTypeType,
-                                   sectorId: SectorType,
-                                   applyingAs: OwnershipType,
-                                   OnSchoolPremises: Boolean,
-                                   OfstedSchoolReferenceNumber: Option[String],
-                                   SchoolName: Option[String],
-                                   PurchaseExisting: Boolean,
-                                   TargetOpeningDate: DateTime)
+sealed abstract class SectorType(val value: Int) extends EnumEntry
 
-object SCTypeOfApplicationType {
-  implicit val marshaller = new XmlMarshaller[SCTypeOfApplicationType] {
-    override def marshall(obj: SCTypeOfApplicationType)(implicit document: Document): DocumentFragment = {
-      createFragment(document) { fragment =>
-        fragment.createValue("ApplicationType", obj.applicationType)
-          .createValue("SectorId", obj.sectorId)
-          .createValue("ApplyingAs", obj.applyingAs)
-          .createValue("OnSchoolPremises", obj.OnSchoolPremises)(XmlMarshaller.yesNoMarshaller)
-          .createValue("OfstedSchoolReferenceNumber", obj.OfstedSchoolReferenceNumber)
-          .createValue("PurchaseExisting", obj.PurchaseExisting)(XmlMarshaller.yesNoMarshaller)
-          .createValue("TargetOpeningDate", obj.TargetOpeningDate)
-      }
-    }
-  }
-}
-
-sealed abstract class SectorType(val value: Int) extends IntEnumEntry
-
-object SectorType extends IntEnum[SectorType] {
-  val values = findValues
+object SectorType extends Enum[SectorType] {
 
   case object LocalAuthority extends SectorType(value = 3)
 
@@ -62,13 +35,14 @@ object SectorType extends IntEnum[SectorType] {
 
   case object Private extends SectorType(value = 1)
 
+  val values: immutable.IndexedSeq[SectorType] = findValues
+
   implicit val marshaller: XmlMarshaller[SectorType] = new IntEnumMarshaller[SectorType]
 }
 
 sealed abstract class OwnershipType(val value: Int) extends EnumEntry
 
 object OwnershipType extends Enum[OwnershipType] {
-  val values: immutable.IndexedSeq[OwnershipType] = findValues
 
   case object Individual extends OwnershipType(1)
 
@@ -76,13 +50,14 @@ object OwnershipType extends Enum[OwnershipType] {
 
   case object Organisation extends OwnershipType(3)
 
+  val values: immutable.IndexedSeq[OwnershipType] = findValues
+
   implicit val marshaller: XmlMarshaller[OwnershipType] = new EnumMarshaller[OwnershipType]
 }
 
-sealed abstract class SectorId(val value: Int) extends IntEnumEntry
+sealed abstract class SectorId(val value: Int) extends EnumEntry
 
-object SectorId extends IntEnum[SectorId] {
-  val values: immutable.IndexedSeq[SectorId] = findValues
+object SectorId extends Enum[SectorId] {
 
   case object Private extends SectorId(1)
 
@@ -92,14 +67,14 @@ object SectorId extends IntEnum[SectorId] {
 
   case object HealthAuth extends SectorId(4)
 
+  val values: immutable.IndexedSeq[SectorId] = findValues
+
   implicit val marshaller: XmlMarshaller[SectorId] = new IntEnumMarshaller[SectorId]
 }
 
+sealed trait ProvisionTypeType
 
-sealed trait ProvisionTypeType extends EnumEntry
-
-object ProvisionTypeType extends Enum[ProvisionTypeType] {
-  val values: immutable.IndexedSeq[ProvisionTypeType] = findValues
+object ProvisionTypeType {
 
   case object Childminder extends ProvisionTypeType
 
@@ -133,5 +108,68 @@ object ProvisionTypeType extends Enum[ProvisionTypeType] {
 
   case object PrivateFosteringArrangements extends ProvisionTypeType
 
-  implicit val marshaller: XmlMarshaller[ProvisionTypeType] = new EnumMarshaller[ProvisionTypeType]
+//  val values: immutable.IndexedSeq[ProvisionTypeType] = findValues
+
+  implicit val marshaller: XmlMarshaller[ProvisionTypeType] = ???
+}
+
+case class SCTypeOfApplicationType(applicationType: ProvisionTypeType,
+                                   sectorId: SectorType,
+                                   applyingAs: OwnershipType,
+                                   OnSchoolPremises: Boolean,
+                                   OfstedSchoolReferenceNumber: Option[String],
+                                   SchoolName: Option[String],
+                                   PurchaseExisting: Boolean,
+                                   TargetOpeningDate: LocalDate)
+
+object SCTypeOfApplicationType {
+  implicit val marshaller: XmlMarshaller[SCTypeOfApplicationType] = new XmlMarshaller[SCTypeOfApplicationType] {
+    override def marshall(obj: SCTypeOfApplicationType)(implicit document: Document): DocumentFragment = {
+      createFragment(document) { fragment =>
+        fragment.createValue("ApplicationType", obj.applicationType)
+          .createValue("SectorId", obj.sectorId)
+          .createValue("ApplyingAs", obj.applyingAs)
+          .createValue("OnSchoolPremises", obj.OnSchoolPremises)(XmlMarshaller.yesNoMarshaller)
+          .createValue("OfstedSchoolReferenceNumber", obj.OfstedSchoolReferenceNumber)
+          .createValue("PurchaseExisting", obj.PurchaseExisting)(XmlMarshaller.yesNoMarshaller)
+          .createValue("TargetOpeningDate", obj.TargetOpeningDate)
+      }
+    }
+  }
+
+  object Uniform {
+
+    import org.atnos.eff._
+    import ltbs.uniform._
+
+    type Stack = Fx.fx7[
+      UniformAsk[ProvisionTypeType, ?],
+      UniformAsk[SectorType, ?],
+      UniformAsk[OwnershipType, ?],
+      UniformAsk[Boolean, ?],
+      UniformAsk[Int, ?],
+      UniformAsk[Option[String], ?],
+      UniformAsk[LocalDate, ?]
+    ]
+
+
+    def program[S: _uniform[ProvisionTypeType, ?]: _uniform[SectorType, ?]: _uniform[OwnershipType, ?]: _uniform[Boolean, ?]: _uniform[Int, ?]: _uniform[Option[String], ?]: _uniform[LocalDate, ?]] = for {
+      applicationType <- uask[S, ProvisionTypeType]("applicationType")
+      sectorId <- uask[S, SectorType]("sectorId")
+      applyingAs <- uask[S, OwnershipType]("applyingAs")
+      onSchoolPremises <- uask[S, Boolean]("onSchoolPremises")
+      ofstedSchoolReferenceNumber <- uask[S, Option[String]]("ofstedSchoolReferenceNumber")
+      schoolName <- uask[S, Option[String]]("schoolName")
+      purchaseExisting <- uask[S, Boolean]("purchaseExisting")
+      targetOpeningDate <- uask[S, LocalDate]("tragetOpeningDate")
+    } yield SCTypeOfApplicationType(applicationType, sectorId, applyingAs, onSchoolPremises, ofstedSchoolReferenceNumber, schoolName,  purchaseExisting, targetOpeningDate)
+
+//    def translate[R, U, E] = new Translate[UniformAsk[SCTypeOfApplicationType, ?], U] {
+//      override def apply[X](kv: UniformAsk[SCTypeOfApplicationType, X]): Eff[U, X] = {
+//        ???
+//      }
+//    }
+  }
+  //
+  //  implicit def journey[R]: _uniform[SCTypeOfApplicationType, R] =
 }
