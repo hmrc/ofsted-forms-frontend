@@ -19,7 +19,7 @@ package uk.gov.hmrc.ofstedformsfrontend.authentication
 import javax.inject.Inject
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, _}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,6 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AuthenticatedRequest[A](val requester: AuthenticateUser, request: Request[A]) extends WrappedRequest[A](request)
 
 class AuthenticateActionBuilder @Inject()(val authConnector: AuthConnector,
+                                          configuration: AuthenticationConfiguration,
                                           val parser: BodyParsers.Default,
                                           val executionContext: ExecutionContext)
   extends ActionBuilder[AuthenticatedRequest, AnyContent] with AuthorisedFunctions {
@@ -41,6 +42,9 @@ class AuthenticateActionBuilder @Inject()(val authConnector: AuthConnector,
         block(new AuthenticatedRequest[A](user, request))
       case None =>
         Future.successful(Results.Forbidden("You are not have email"))
-    }(extractHeaders(request), executionContext)
+    }(extractHeaders(request), executionContext).recover {
+      case _: NoActiveSession =>
+        Results.Redirect(configuration.loginUrl, Map("continue" -> Seq(configuration.continueUrl(request))))
+    }(executionContext)
   }
 }

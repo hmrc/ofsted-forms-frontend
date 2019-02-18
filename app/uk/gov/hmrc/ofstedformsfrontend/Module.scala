@@ -19,6 +19,7 @@ package uk.gov.hmrc.ofstedformsfrontend
 import com.google.inject.{AbstractModule, Provides}
 import javax.inject.{Named, Singleton}
 import play.api.{ConfigLoader, Configuration}
+import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticationConfiguration, AuthenticationConfigurationProvider}
 
 class Module extends AbstractModule {
 
@@ -30,6 +31,6 @@ class Module extends AbstractModule {
   }
 
   override def configure(): Unit = {
-    // Nothing to bind
+    bind(classOf[AuthenticationConfiguration]).toProvider(classOf[AuthenticationConfigurationProvider])
   }
 }
