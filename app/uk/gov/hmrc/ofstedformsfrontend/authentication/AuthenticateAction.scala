@@ -43,7 +43,8 @@ class AuthenticateActionBuilder @Inject()(val authConnector: AuthConnector,
       case None =>
         Future.successful(Results.Forbidden("You are not have email"))
     }(extractHeaders(request), executionContext).recover {
-      case _: NoActiveSession => Results.Redirect(configuration.loginUrl, Map("continue" -> Seq(configuration.continueUrl(request))))
+      case _: NoActiveSession =>
+        Results.Redirect(configuration.loginUrl, Map("continue" -> Seq(configuration.continueUrl(request))))
     }(executionContext)
   }
 }

@@ -32,4 +32,4 @@ class AuthenticationConfigurationProvider @Inject()(configuration: Configuration
     loginUrl = configuration.get[String]("authentication.login-redirection-url"),
     continueBaseUrl = configuration.get[String]("authentication.continue-base-url")
   )
-}git 
+}
