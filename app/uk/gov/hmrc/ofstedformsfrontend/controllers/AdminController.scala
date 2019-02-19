@@ -20,15 +20,19 @@ import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, MessagesControllerComponents}
 import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, CheckAdminPass}
+import uk.gov.hmrc.ofstedformsfrontend.forms.FormRepository
 import uk.gov.hmrc.ofstedformsfrontend.views.html
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class AdminController @Inject()(mcc: MessagesControllerComponents,
                                 authenticate: AuthenticateActionBuilder,
-                                checkAdminPass: CheckAdminPass)
+                                checkAdminPass: CheckAdminPass,
+                                formRepository: FormRepository)
                                (pending_forms_list: html.pending_forms_list) extends FrontendController(mcc) with I18nSupport {
 
-  def pendingForms(): Action[Unit] = (authenticate andThen checkAdminPass) (parse.empty) { implicit request =>
-    Ok(pending_forms_list())
+  def pendingForms(): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
+    formRepository.findPending().map { forms =>
+      Ok(pending_forms_list(forms))
+    }(mcc.executionContext)
   }
 }

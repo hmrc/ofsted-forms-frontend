@@ -36,11 +36,13 @@ trait FormRepository {
 
   def findDraft(id: FormId): Future[Draft]
 
+  def findPending(): Future[scala.collection.immutable.Iterable[SubmittedForm]]
+
   def save(form: GeneralForm): Future[GeneralForm]
 
   def save(form: SubmittedForm): Future[SubmittedForm]
 
-  def findWhereCreatorIs(creator: AuthenticateUser): Future[Seq[GeneralForm]]
+  def findWhereCreatorIs(creator: AuthenticateUser): Future[scala.collection.immutable.Iterable[GeneralForm]]
 }
 
 
@@ -68,12 +70,12 @@ final class MemoryFormRepository extends FormRepository {
     }
   }
 
-  override def findWhereCreatorIs(creator: AuthenticateUser): Future[Seq[GeneralForm]] = {
+  override def findWhereCreatorIs(creator: AuthenticateUser): Future[scala.collection.immutable.Iterable[GeneralForm]] = {
     val map = database.get()
     Future.successful {
       map.withFilter {
         case (_, form) => form.created.executor == creator
-      }.map(_._2).toSeq
+      }.map(_._2)
     }
   }
 
@@ -88,5 +90,10 @@ final class MemoryFormRepository extends FormRepository {
     }
   }
 
-
+  override def findPending(): Future[scala.collection.immutable.Iterable[SubmittedForm]] = Future.successful {
+    database.get.flatMap {
+      case (_, form: SubmittedForm) => Some(form)
+      case _ => None
+    }
+  }
 }
