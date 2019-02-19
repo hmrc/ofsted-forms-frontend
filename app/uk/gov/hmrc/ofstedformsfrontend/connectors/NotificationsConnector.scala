@@ -19,8 +19,9 @@ package uk.gov.hmrc.ofstedformsfrontend.connectors
 import java.util.UUID
 
 import javax.inject.{Inject, Named}
-import play.api.libs.json.Reads
+import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, Occurrence}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,8 +41,13 @@ class NotificationsConnector @Inject()(httpClient: HttpClient,
 
   private val submissionUrl = baseUrl + "/ofsted-forms-notifications/submission"
 
-  def submission()(implicit hc: HeaderCarrier): Future[NotificationId] = {
-    httpClient.doEmptyPost(submissionUrl).flatMap( request =>
+  def submission(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
+    val payload = Json.obj(
+      "time" -> submission.moment,
+      "email" -> email,
+      "id" -> formId.value.toString
+    )
+    httpClient.POST(submissionUrl, payload, Seq.empty).flatMap(request =>
       Future.fromTry(NotificationId(request.body))
     )
   }
