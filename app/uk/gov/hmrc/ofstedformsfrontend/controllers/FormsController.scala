@@ -30,12 +30,7 @@ class FormsController @Inject()(authenticate: AuthenticateActionBuilder,
                                 checkAdminPass: CheckAdminPass,
                                 mcc: MessagesControllerComponents,
                                 formRepository: FormRepository)
-                               (pending_forms_list: html.pending_forms_list,
-                               user_form_list: html.user_form_list) extends FrontendController(mcc) with I18nSupport {
-
-  def pendingForms(): Action[Unit] = (authenticate andThen checkAdminPass) (parse.empty) { implicit request =>
-    Ok(pending_forms_list())
-  }
+                               (user_form_list: html.user_form_list) extends FrontendController(mcc) with I18nSupport {
 
   def all(): Action[Unit] = authenticate(parse.empty).async { implicit request =>
     formRepository.findWhereCreatorIs(request.requester).map{ forms =>

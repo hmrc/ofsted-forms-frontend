@@ -15,16 +15,31 @@
  *@
 
 @import uk.gov.hmrc.ofstedformsfrontend.config.AppConfig
+@import uk.gov.hmrc.ofstedformsfrontend.forms.SubmittedForm
+
 @this(main_template: main_template)
-@()(implicit request: Request[_], messages: Messages)
+@(forms: scala.collection.immutable.Iterable[SubmittedForm])(implicit request: Request[_], messages: Messages)
 
 @main_template("Pending forms list") {
-    <h1>Pending forms</h1>
-    <ul>
-        <li>Form 1</li>
-        <li>Form 2</li>
-        <li>Form 3</li>
-        <li>Form 4</li>
-        <li>Form 5</li>
-    </ul>
+    <h1>Submitted forms</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Kind</th>
+                <th>Submitted by</th>
+                <th>Submitted at</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for(form <- forms){
+                <tr>
+                    <td>@form.id</td>
+                    <td>@form.kind</td>
+                    <td>@form.submission.executor</td>
+                    <td>@form.submission.moment</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }

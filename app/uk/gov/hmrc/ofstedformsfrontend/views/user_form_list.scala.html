@@ -22,7 +22,7 @@
 
 @this(main_template: main_template)(implicit val messagesApi: MessagesApi)
 
-@(forms: Seq[GeneralForm])(implicit request: Request[_], messages: MessagesProvider)
+@(forms: scala.collection.immutable.Iterable[GeneralForm])(implicit request: Request[_], messages: MessagesProvider)
 
 @main_template("Forms"){
     <h1>Forms created</h1>
