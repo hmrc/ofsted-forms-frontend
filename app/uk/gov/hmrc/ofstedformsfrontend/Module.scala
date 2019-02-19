@@ -20,6 +20,7 @@ import com.google.inject.{AbstractModule, Provides}
 import javax.inject.{Named, Singleton}
 import play.api.{ConfigLoader, Configuration}
 import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticationConfiguration, AuthenticationConfigurationProvider}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 class Module extends AbstractModule {
 
@@ -28,6 +29,13 @@ class Module extends AbstractModule {
   @Singleton
   def adminsFromConfig(configuration: Configuration): Set[String] = {
     configuration.get[Set[String]]("ofsted-forms.admins")(ConfigLoader.seqStringLoader.map(_.toSet))
+  }
+
+  @Provides
+  @Named("ofsted-forms-notifications-base-url")
+  @Singleton
+  def ofstedFormsNotificationBaseUrl(servicesConfig: ServicesConfig): String = {
+    servicesConfig.baseUrl("ofsted-forms-notifications")
   }
 
   override def configure(): Unit = {
