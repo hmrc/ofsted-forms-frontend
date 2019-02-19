@@ -2,10 +2,15 @@
 
 GET         /forms                       uk.gov.hmrc.ofstedformsfrontend.controllers.FormsController.all
 POST        /forms                       uk.gov.hmrc.ofstedformsfrontend.controllers.FormsController.create
+
+#ADMIN INTERFACE
 GET         /forms/pending               uk.gov.hmrc.ofstedformsfrontend.controllers.AdminController.pendingForms
 
 GET         /forms/:id                   uk.gov.hmrc.ofstedformsfrontend.controllers.FormController.show(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
 POST        /forms/:id/submission        uk.gov.hmrc.ofstedformsfrontend.controllers.FormController.submmision(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
+
+#ADMIN INTERFACE
+POST        /forms/:id/acceptance        uk.gov.hmrc.ofstedformsfrontend.controllers.AdminController.accept(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
 
 
 GET         /uniform/                    uk.gov.hmrc.ofstedformsfrontend.controllers.UniformController.form(key = "")

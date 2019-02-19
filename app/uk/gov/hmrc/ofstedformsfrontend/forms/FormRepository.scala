@@ -36,11 +36,15 @@ trait FormRepository {
 
   def findDraft(id: FormId): Future[Draft]
 
+  def findSubmitted(id: FormId): Future[SubmittedForm]
+
   def findPending(): Future[scala.collection.immutable.Iterable[SubmittedForm]]
 
   def save(form: GeneralForm): Future[GeneralForm]
 
   def save(form: SubmittedForm): Future[SubmittedForm]
+
+  def save(form: AcceptedForm): Future[AcceptedForm]
 
   def findWhereCreatorIs(creator: AuthenticateUser): Future[scala.collection.immutable.Iterable[GeneralForm]]
 }
@@ -62,6 +66,16 @@ final class MemoryFormRepository extends FormRepository {
 
   @tailrec
   override def save(form: SubmittedForm): Future[SubmittedForm] = {
+    val now = database.get()
+    if(database.compareAndSet(now, now.updated(form.id, form))){
+      Future.successful(form)
+    } else {
+      save(form)
+    }
+  }
+
+  @tailrec
+  override def save(form: AcceptedForm): Future[AcceptedForm] = {
     val now = database.get()
     if(database.compareAndSet(now, now.updated(form.id, form))){
       Future.successful(form)
@@ -94,6 +108,13 @@ final class MemoryFormRepository extends FormRepository {
     database.get.flatMap {
       case (_, form: SubmittedForm) => Some(form)
       case _ => None
+    }
+  }
+
+  override def findSubmitted(id: FormId): Future[SubmittedForm] = {
+    database.get.get(id).fold[Future[SubmittedForm]](Future.failed(new NoSuchElementException(s"There is no form $id"))){
+      case form: SubmittedForm => Future.successful(form)
+      case _ => Future.failed(new IllegalStateException("There is form but it is not Draft"))
     }
   }
 }
