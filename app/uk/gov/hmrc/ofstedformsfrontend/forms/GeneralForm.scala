@@ -21,9 +21,12 @@ import java.util.UUID
 
 import enumeratum._
 import play.api.mvc.PathBindable
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticateUser
+import uk.gov.hmrc.ofstedformsfrontend.connectors.{NotificationId, NotificationsConnector}
 
 import scala.collection.immutable
+import scala.concurrent.{ExecutionContext, Future}
 
 case class FormId(value: UUID)
 
@@ -78,8 +81,16 @@ case class Draft(id: FormId, kind: FormKind, created: Occurrence) extends Genera
 
   override def accepted: Option[Occurrence] = None
 
-  def submit(submitter: AuthenticateUser): SubmittedForm = {
+  def submit(submitter: AuthenticateUser,
+             notificationsConnector: NotificationsConnector,
+             formRepository: FormRepository)
+            (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(SubmittedForm, NotificationId)] = {
     val submission = Occurrence(submitter, ZonedDateTime.now())
-    SubmittedForm(id, kind, created, submission)
+    val result = SubmittedForm(id, kind, created, submission)
+    formRepository.save(result).flatMap( saved =>
+      notificationsConnector.submission(saved.id, submitter.email, submission)
+        .map(notification => (saved, notification))
+    )
+
   }
 }

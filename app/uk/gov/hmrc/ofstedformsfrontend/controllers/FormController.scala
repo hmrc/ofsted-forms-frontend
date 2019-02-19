@@ -20,14 +20,15 @@ import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, AuthenticatedRequest}
+import uk.gov.hmrc.ofstedformsfrontend.connectors.NotificationsConnector
 import uk.gov.hmrc.ofstedformsfrontend.forms.{Draft, FormId, FormRepository, GeneralForm}
 import uk.gov.hmrc.ofstedformsfrontend.views.html
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.{BackendController, FrontendController}
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
 
-class FormRequest[A](val form: GeneralForm, request: AuthenticatedRequest[A]) extends WrappedRequest[A](request){
+class FormRequest[A](val form: GeneralForm, request: AuthenticatedRequest[A]) extends WrappedRequest[A](request) {
   def requester = request.requester
 }
 
@@ -37,8 +38,9 @@ class DraftRequest[A](val form: Draft, request: AuthenticatedRequest[A]) extends
 
 class FormController @Inject()(mcc: MessagesControllerComponents,
                                formRepository: FormRepository,
+                               notificationsConnector: NotificationsConnector,
                                authenticate: AuthenticateActionBuilder)
-                              (form_view: html.form_view) extends AbstractController(mcc) with I18nSupport {
+                              (form_view: html.form_view) extends FrontendController(mcc) with I18nSupport {
 
   def fetchForm(id: FormId) = new ActionRefiner[AuthenticatedRequest, FormRequest] {
     /**
@@ -74,12 +76,13 @@ class FormController @Inject()(mcc: MessagesControllerComponents,
     override protected def executionContext: ExecutionContext = mcc.executionContext
   }
 
-  def show(id: FormId) = (authenticate andThen fetchForm(id))(parse.empty) { implicit request =>
+  def show(id: FormId) = (authenticate andThen fetchForm(id)) (parse.empty) { implicit request =>
     Ok(form_view(request.form))
   }
 
-  def submmision(id: FormId) = (authenticate andThen fetchDraft(id)){ implicit request =>
-    formRepository.save(request.form.submit(request.requester))
-    SeeOther(routes.FormsController.all().absoluteURL())
+  def submmision(id: FormId) = (authenticate andThen fetchDraft(id)).async { implicit request =>
+    request.form.submit(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext).map( _ =>
+      SeeOther(routes.FormsController.all().absoluteURL())
+    )(mcc.executionContext)
   }
 }
