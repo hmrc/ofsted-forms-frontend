@@ -69,8 +69,14 @@ class NotificationsConnector @Inject()(httpClient: HttpClient,
   private val rejectionUrl = baseUrl + "/ofsted-forms-notifications/rejection"
 
   def rejection(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
-    httpClient.doEmptyPost(rejectionUrl)
-    ???
+    val payload = Json.obj(
+      "time" -> submission.moment,
+      "email" -> email,
+      "id" -> formId.value.toString
+    )
+    httpClient.POST(rejectionUrl, payload, Seq.empty).flatMap(request =>
+      Future.fromTry(NotificationId(request.body))
+    )
   }
 
 
