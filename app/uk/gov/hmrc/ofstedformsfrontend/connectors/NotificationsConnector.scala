@@ -18,8 +18,8 @@ package uk.gov.hmrc.ofstedformsfrontend.connectors
 
 import java.util.UUID
 
-import javax.inject.{Inject, Named}
-import play.api.libs.json.{Json, Reads}
+import javax.inject.{Inject, Named, Singleton}
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, Occurrence}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -35,6 +35,7 @@ object NotificationId {
   }
 }
 
+@Singleton
 class NotificationsConnector @Inject()(httpClient: HttpClient,
                                       @Named("ofsted-forms-notifications-base-url") baseUrl: String)
                                       (implicit ec: ExecutionContext){
@@ -54,7 +55,7 @@ class NotificationsConnector @Inject()(httpClient: HttpClient,
 
   private val acceptanceUrl = baseUrl + "/ofsted-forms-notifications/acceptance"
 
-  def acceptance()(implicit hc: HeaderCarrier): Future[NotificationId] = {
+  def acceptance(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
     httpClient.doEmptyPost(acceptanceUrl)
     ???
   }
