@@ -43,38 +43,28 @@ class NotificationsConnector @Inject()(httpClient: HttpClient,
   private val submissionUrl = baseUrl + "/ofsted-forms-notifications/submission"
 
   def submission(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
-    val payload = Json.obj(
-      "time" -> submission.moment,
-      "email" -> email,
-      "id" -> formId.value.toString
-    )
-    httpClient.POST(submissionUrl, payload, Seq.empty).flatMap(request =>
-      Future.fromTry(NotificationId(request.body))
-    )
+    notify(submissionUrl, formId, email, submission)
   }
 
   private val acceptanceUrl = baseUrl + "/ofsted-forms-notifications/acceptance"
 
   def acceptance(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
-    val payload = Json.obj(
-      "time" -> submission.moment,
-      "email" -> email,
-      "id" -> formId.value.toString
-    )
-    httpClient.POST(acceptanceUrl, payload, Seq.empty).flatMap(request =>
-      Future.fromTry(NotificationId(request.body))
-    )
+    notify(acceptanceUrl, formId, email, submission)
   }
 
   private val rejectionUrl = baseUrl + "/ofsted-forms-notifications/rejection"
 
   def rejection(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
+    notify(rejectionUrl, formId, email, submission)
+  }
+
+  private def notify(url: String, formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
     val payload = Json.obj(
       "time" -> submission.moment,
       "email" -> email,
       "id" -> formId.value.toString
     )
-    httpClient.POST(rejectionUrl, payload, Seq.empty).flatMap(request =>
+    httpClient.POST(url, payload, Seq.empty).flatMap(request =>
       Future.fromTry(NotificationId(request.body))
     )
   }
