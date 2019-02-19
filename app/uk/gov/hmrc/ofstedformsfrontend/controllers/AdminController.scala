@@ -28,11 +28,11 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
                                 authenticate: AuthenticateActionBuilder,
                                 checkAdminPass: CheckAdminPass,
                                 formRepository: FormRepository)
-                               (pending_forms_list: html.pending_forms_list) extends FrontendController(mcc) with I18nSupport {
+                               (pendingFormList: html.PendingFormList) extends FrontendController(mcc) with I18nSupport {
 
   def pendingForms(): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
     formRepository.findPending().map { forms =>
-      Ok(pending_forms_list(forms))
+      Ok(pendingFormList(forms))
     }(mcc.executionContext)
   }
 }
