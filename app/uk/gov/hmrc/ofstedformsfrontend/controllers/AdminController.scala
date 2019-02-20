@@ -20,19 +20,42 @@ import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, MessagesControllerComponents}
 import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, CheckAdminPass}
-import uk.gov.hmrc.ofstedformsfrontend.forms.FormRepository
-import uk.gov.hmrc.ofstedformsfrontend.views.html
+import uk.gov.hmrc.ofstedformsfrontend.connectors.NotificationsConnector
+import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, FormRepository}
+import uk.gov.hmrc.ofstedformsfrontend.views.html.admin._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class AdminController @Inject()(mcc: MessagesControllerComponents,
                                 authenticate: AuthenticateActionBuilder,
                                 checkAdminPass: CheckAdminPass,
-                                formRepository: FormRepository)
-                               (pendingFormList: html.PendingFormList) extends FrontendController(mcc) with I18nSupport {
+                                formRepository: FormRepository,
+                                notificationsConnector: NotificationsConnector)
+                               (pendingFormList: PendingFormList,
+                                adminFormView: FormView) extends FrontendController(mcc) with I18nSupport {
 
   def pendingForms(): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
     formRepository.findPending().map { forms =>
       Ok(pendingFormList(forms))
+    }(mcc.executionContext)
+  }
+
+  def showForm(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
+    formRepository.findSubmitted(id).map { form =>
+      Ok(adminFormView(form))
+    }(mcc.executionContext)
+  }
+
+  def accept(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
+    formRepository.findSubmitted(id).flatMap { form =>
+      form.accept(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext)
+        .map(_ => Redirect(routes.AdminController.pendingForms()))(mcc.executionContext)
+    }(mcc.executionContext)
+  }
+
+  def reject(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
+    formRepository.findSubmitted(id).flatMap { form =>
+      form.reject(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext)
+        .map(_ => Redirect(routes.AdminController.pendingForms()))(mcc.executionContext)
     }(mcc.executionContext)
   }
 }

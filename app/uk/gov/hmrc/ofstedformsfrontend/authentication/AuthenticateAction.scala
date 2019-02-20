@@ -18,7 +18,7 @@ package uk.gov.hmrc.ofstedformsfrontend.authentication
 
 import javax.inject.Inject
 import play.api.mvc._
-import uk.gov.hmrc.auth.core.retrieve.Retrievals
+import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, _}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 
@@ -36,12 +36,12 @@ class AuthenticateActionBuilder @Inject()(val authConnector: AuthConnector,
     HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, Some(rh.session), Some(rh))
 
   override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
-    authorised().retrieve(Retrievals.email) {
-      case Some(email) =>
-        val user = AuthenticateUser(email)
+    authorised().retrieve(Retrievals.email and Retrievals.internalId) {
+      case Some(email) ~ Some(internalId) =>
+        val user = AuthenticateUser(internalId, email)
         block(new AuthenticatedRequest[A](user, request))
-      case None =>
-        Future.successful(Results.Forbidden("You are not have email"))
+      case _ =>
+        Future.successful(Results.Forbidden("You are not have email or internalId"))
     }(extractHeaders(request), executionContext).recover {
       case _: NoActiveSession =>
         Results.Redirect(configuration.loginUrl, Map("continue" -> Seq(configuration.continueUrl(request))))

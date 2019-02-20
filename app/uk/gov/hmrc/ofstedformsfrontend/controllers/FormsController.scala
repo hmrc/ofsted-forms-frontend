@@ -40,7 +40,7 @@ class FormsController @Inject()(authenticate: AuthenticateActionBuilder,
 
   def create: Action[FormKind] = authenticate(parse.form(FormsController.kindForm)).async { implicit request =>
     formRepository.save(GeneralForm.create(request.body, request.requester)).map { _ =>
-      SeeOther(routes.FormsController.all().absoluteURL())
+      Redirect(routes.FormsController.all())
     }(defaultExecutionContext)
   }
 }
