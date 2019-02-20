@@ -4,7 +4,7 @@ GET         /forms                       uk.gov.hmrc.ofstedformsfrontend.control
 POST        /forms                       uk.gov.hmrc.ofstedformsfrontend.controllers.FormsController.create
 
 #ADMIN INTERFACE
-GET         /forms/pending               uk.gov.hmrc.ofstedformsfrontend.controllers.AdminController.pendingForms
+GET         /forms/submitted             uk.gov.hmrc.ofstedformsfrontend.controllers.AdminController.pendingForms
 
 GET         /forms/:id                   uk.gov.hmrc.ofstedformsfrontend.controllers.FormController.show(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
 POST        /forms/:id/submission        uk.gov.hmrc.ofstedformsfrontend.controllers.FormController.submmision(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
