@@ -38,13 +38,13 @@ trait FormRepository {
 
   def findSubmitted(id: FormId): Future[SubmittedForm]
 
-  def findPending(): Future[scala.collection.immutable.Iterable[SubmittedForm]]
+  def findSubmitted(): Future[scala.collection.immutable.Iterable[GeneralForm]]
 
   def save(form: Draft): Future[Draft]
 
   def save(form: SubmittedForm): Future[SubmittedForm]
 
-  def save(form: AcceptedForm): Future[AcceptedForm]
+  def save(form: ApprovedForm): Future[ApprovedForm]
 
   def save(form: RejectedForm): Future[RejectedForm]
 
@@ -77,7 +77,7 @@ final class MemoryFormRepository extends FormRepository {
   }
 
   @tailrec
-  override def save(form: AcceptedForm): Future[AcceptedForm] = {
+  override def save(form: ApprovedForm): Future[ApprovedForm] = {
     val now = database.get()
     if(database.compareAndSet(now, now.updated(form.id, form))){
       Future.successful(form)
@@ -116,11 +116,10 @@ final class MemoryFormRepository extends FormRepository {
     }
   }
 
-  override def findPending(): Future[scala.collection.immutable.Iterable[SubmittedForm]] = Future.successful {
-    database.get.flatMap {
-      case (_, form: SubmittedForm) => Some(form)
-      case _ => None
-    }
+  override def findSubmitted(): Future[scala.collection.immutable.Iterable[GeneralForm]] = Future.successful {
+    database.get.withFilter {
+      case (_, form) => form.submitted.isDefined
+    }.map(_._2)
   }
 
   override def findSubmitted(id: FormId): Future[SubmittedForm] = {

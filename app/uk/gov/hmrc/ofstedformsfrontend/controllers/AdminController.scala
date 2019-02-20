@@ -34,7 +34,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
                                 adminFormView: FormView) extends FrontendController(mcc) with I18nSupport {
 
   def pendingForms(): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
-    formRepository.findPending().map { forms =>
+    formRepository.findSubmitted().map { forms =>
       Ok(pendingFormList(forms))
     }(mcc.executionContext)
   }
