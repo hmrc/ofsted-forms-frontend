@@ -40,11 +40,13 @@ trait FormRepository {
 
   def findPending(): Future[scala.collection.immutable.Iterable[SubmittedForm]]
 
-  def save(form: GeneralForm): Future[GeneralForm]
+  def save(form: Draft): Future[Draft]
 
   def save(form: SubmittedForm): Future[SubmittedForm]
 
   def save(form: AcceptedForm): Future[AcceptedForm]
+
+  def save(form: RejectedForm): Future[RejectedForm]
 
   def findWhereCreatorIs(creator: AuthenticateUser): Future[scala.collection.immutable.Iterable[GeneralForm]]
 }
@@ -55,7 +57,7 @@ final class MemoryFormRepository extends FormRepository {
   private val database = new AtomicReference[Map[FormId, GeneralForm]](Map.empty)
 
   @tailrec
-  override def save(form: GeneralForm): Future[GeneralForm] = {
+  override def save(form: Draft): Future[Draft] = {
     val now = database.get()
     if(database.compareAndSet(now, now.updated(form.id, form))){
       Future.successful(form)
@@ -76,6 +78,16 @@ final class MemoryFormRepository extends FormRepository {
 
   @tailrec
   override def save(form: AcceptedForm): Future[AcceptedForm] = {
+    val now = database.get()
+    if(database.compareAndSet(now, now.updated(form.id, form))){
+      Future.successful(form)
+    } else {
+      save(form)
+    }
+  }
+
+  @tailrec
+  override def save(form: RejectedForm): Future[RejectedForm] = {
     val now = database.get()
     if(database.compareAndSet(now, now.updated(form.id, form))){
       Future.successful(form)

@@ -51,4 +51,11 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
         .map(_ => Redirect(routes.AdminController.pendingForms()))(mcc.executionContext)
     }(mcc.executionContext)
   }
+
+  def reject(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
+    formRepository.findSubmitted(id).flatMap { form =>
+      form.reject(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext)
+        .map(_ => Redirect(routes.AdminController.pendingForms()))(mcc.executionContext)
+    }(mcc.executionContext)
+  }
 }

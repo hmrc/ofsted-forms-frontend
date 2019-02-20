@@ -25,8 +25,9 @@
 @main_template("Pending forms list") {
     <h1>@form.kind Form</h1>
 
-    <form method="POST" action="@appRoutes.AdminController.accept(form.id)">
+    <form method="POST" action="">
         @helper.CSRF.formField
-        <input type="submit" value="Accept">
+        <input type="submit" formaction="@appRoutes.AdminController.accept(form.id)" value="Accept">
+        <input type="submit" formaction="@appRoutes.AdminController.reject(form.id)" value="Reject">
     </form>
 }

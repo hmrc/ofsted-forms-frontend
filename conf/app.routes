@@ -12,6 +12,7 @@ POST        /forms/:id/submission        uk.gov.hmrc.ofstedformsfrontend.control
 #ADMIN INTERFACE
 GET         /forms/:id/admin             uk.gov.hmrc.ofstedformsfrontend.controllers.AdminController.showForm(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
 POST        /forms/:id/acceptance        uk.gov.hmrc.ofstedformsfrontend.controllers.AdminController.accept(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
+POST        /forms/:id/rejection         uk.gov.hmrc.ofstedformsfrontend.controllers.AdminController.reject(id: uk.gov.hmrc.ofstedformsfrontend.forms.FormId)
 
 
 GET         /uniform/                    uk.gov.hmrc.ofstedformsfrontend.controllers.UniformController.form(key = "")
