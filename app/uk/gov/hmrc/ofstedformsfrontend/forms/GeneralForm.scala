@@ -56,6 +56,8 @@ trait GeneralForm {
   def completed: Option[Occurrence]
 
   def accepted: Option[Occurrence]
+
+  def isAccepted: Boolean = accepted.isDefined
 }
 
 object GeneralForm {
@@ -75,7 +77,7 @@ case class RejectedForm(id: FormId, kind: FormKind, created: Occurrence, submiss
 }
 
 
-case class AcceptedForm(id: FormId, kind: FormKind, created: Occurrence, submission: Occurrence, acceptance: Occurrence) extends GeneralForm {
+case class ApprovedForm(id: FormId, kind: FormKind, created: Occurrence, submission: Occurrence, acceptance: Occurrence) extends GeneralForm {
   override def submitted: Option[Occurrence] = Some(submission)
 
   override def completed: Option[Occurrence] = Some(acceptance)
@@ -92,9 +94,9 @@ case class SubmittedForm(id: FormId, kind: FormKind, created: Occurrence, submis
 
   def accept(acceptor: AuthenticateUser,
              notificationsConnector: NotificationsConnector,
-             formRepository: FormRepository)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AcceptedForm] = {
+             formRepository: FormRepository)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ApprovedForm] = {
     val acceptance = Occurrence(acceptor, ZonedDateTime.now())
-    val result = AcceptedForm(id, kind, created, submission, acceptance)
+    val result = ApprovedForm(id, kind, created, submission, acceptance)
     formRepository.save(result).flatMap( saved =>
       notificationsConnector.acceptance(saved.id, saved.created.executor.email, saved.acceptance).map(_ => saved)
     )
@@ -114,7 +116,7 @@ case class SubmittedForm(id: FormId, kind: FormKind, created: Occurrence, submis
 case class Draft(id: FormId, kind: FormKind, created: Occurrence) extends GeneralForm {
   override def submitted: Option[Occurrence] = None
 
-  override def completed: Option[Occurrence] = ???
+  override def completed: Option[Occurrence] = None
 
   override def accepted: Option[Occurrence] = None
 

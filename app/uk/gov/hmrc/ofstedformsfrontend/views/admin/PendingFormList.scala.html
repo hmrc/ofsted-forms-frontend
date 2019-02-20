@@ -15,12 +15,23 @@
  *@
 
 @import uk.gov.hmrc.ofstedformsfrontend.config.AppConfig
-@import uk.gov.hmrc.ofstedformsfrontend.forms.SubmittedForm
+@import uk.gov.hmrc.ofstedformsfrontend.forms.GeneralForm
 @import uk.gov.hmrc.ofstedformsfrontend.controllers.{routes => appRoutes}
 @import uk.gov.hmrc.ofstedformsfrontend.views.html._
+@import uk.gov.hmrc.ofstedformsfrontend.forms.Occurrence
 
 @this(main_template: main_template)
-@(forms: scala.collection.immutable.Iterable[SubmittedForm])(implicit request: Request[_], messages: Messages)
+@(forms: scala.collection.immutable.Iterable[GeneralForm])(implicit request: Request[_], messages: Messages)
+
+@occurence(optional: Option[Occurrence]) = {
+    @optional.fold {
+        <td></td>
+        <td></td>
+    }{ occurence =>
+        <td>@occurence.executor.email</td>
+        <td>@occurence.moment</td>
+    }
+}
 
 @main_template("Pending forms list") {
     <h1>Pending forms</h1>
@@ -29,8 +40,11 @@
             <tr>
                 <th>Id</th>
                 <th>Kind</th>
-                <th>Submitted by</th>
+                <th>Submitter email</th>
                 <th>Submitted at</th>
+                <th>Assessed email</th>
+                <th>Assessed at</th>
+                <th>Accepted</th>
             </tr>
         </thead>
         <tbody>
@@ -38,8 +52,17 @@
                 <tr>
                     <td><a href="@appRoutes.AdminController.showForm(form.id)" >@form.id</a></td>
                     <td>@form.kind</td>
-                    <td>@form.submission.executor</td>
-                    <td>@form.submission.moment</td>
+                    @occurence(form.submitted)
+                    @occurence(form.completed)
+                    @if(form.completed.isDefined){
+                        @if(form.isAccepted){
+                            <td>YES</td>
+                        } else {
+                            <td>NO</td>
+                        }
+                    } else {
+                        <td></td>
+                    }
                 </tr>
             }
         </tbody>
