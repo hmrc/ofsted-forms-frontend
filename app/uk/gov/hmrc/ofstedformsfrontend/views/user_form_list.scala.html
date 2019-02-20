@@ -41,6 +41,7 @@
         <thead>
             <tr>
                 <td>Form Identifier</td>
+                <td>Form type</td>
                 <td>Created at</td>
                 <td>Submitted at</td>
             </tr>
@@ -49,6 +50,7 @@
             @for(form <- forms){
                 <tr>
                     <td><a href="@routes.FormController.show(form.id)">@form.id</a></td>
+                    <td>@form.kind</td>
                     <td>@form.created.moment</td>
                     <td>@{form.submitted.fold(HtmlFormat.empty)(occurence => Html(occurence.moment.toString)) }</td>
                 </tr>

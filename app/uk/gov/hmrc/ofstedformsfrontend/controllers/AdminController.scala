@@ -22,7 +22,8 @@ import play.api.mvc.{Action, MessagesControllerComponents}
 import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, CheckAdminPass}
 import uk.gov.hmrc.ofstedformsfrontend.connectors.NotificationsConnector
 import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, FormRepository}
-import uk.gov.hmrc.ofstedformsfrontend.views.html
+import uk.gov.hmrc.ofstedformsfrontend.views.html._
+import uk.gov.hmrc.ofstedformsfrontend.views.html.admin.FormView
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class AdminController @Inject()(mcc: MessagesControllerComponents,
@@ -30,11 +31,18 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
                                 checkAdminPass: CheckAdminPass,
                                 formRepository: FormRepository,
                                 notificationsConnector: NotificationsConnector)
-                               (pendingFormList: html.PendingFormList) extends FrontendController(mcc) with I18nSupport {
+                               (pendingFormList: PendingFormList,
+                                adminFormView: FormView) extends FrontendController(mcc) with I18nSupport {
 
   def pendingForms(): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
     formRepository.findPending().map { forms =>
       Ok(pendingFormList(forms))
+    }(mcc.executionContext)
+  }
+
+  def showForm(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
+    formRepository.findSubmitted(id).map { form =>
+      Ok(adminFormView(form))
     }(mcc.executionContext)
   }
 
