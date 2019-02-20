@@ -22,8 +22,7 @@ import play.api.mvc.{Action, MessagesControllerComponents}
 import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, CheckAdminPass}
 import uk.gov.hmrc.ofstedformsfrontend.connectors.NotificationsConnector
 import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, FormRepository}
-import uk.gov.hmrc.ofstedformsfrontend.views.html._
-import uk.gov.hmrc.ofstedformsfrontend.views.html.admin.FormView
+import uk.gov.hmrc.ofstedformsfrontend.views.html.admin._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class AdminController @Inject()(mcc: MessagesControllerComponents,
