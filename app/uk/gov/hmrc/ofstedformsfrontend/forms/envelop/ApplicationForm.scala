@@ -44,7 +44,7 @@ object ApplicationForm {
     override def marshall(obj: ApplicationForm)(implicit document: Document): Node = {
       createFragment(document) {
         _.createElement("FormType")( _.appendChild(obj.form.toDocument))
-          .createValue("FormId", obj.id)
+          .createValue("FormID", obj.id)
           .createValue("CreatedBy", obj.createdBy)
           .createValue("CreatedDate", obj.createdDate)
           .createValue("Source", obj.source)
