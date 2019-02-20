@@ -89,7 +89,7 @@ object RegisteredPersonsDetails {
     override def marshall(obj: RegisteredPersonsDetails)(implicit document: Document): Node = {
       createFragment(document){ fragment =>
         obj.persons.foreach { person =>
-          fragment.createElement("RegisteredPerson"){ element =>
+          fragment.createElement("ReigsteredPerson"){ element =>
             element.createValue("Person", person)
           }
         }

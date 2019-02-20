@@ -40,8 +40,8 @@ object KnownIndividual {
     override def marshall(obj: KnownIndividual)(implicit document: Document): Node = {
       createFragment(document){
         _.createValue("AlreadyKnownOfsted", "Yes")
-          .createValue("IndividualId", obj.id)
           .createValue("EY2Enclosed", obj.EY2Enclosed)(XmlMarshaller.yesNoMarshaller)
+          .createValue("IndividualId", obj.id)
       }
     }
   }
@@ -59,8 +59,8 @@ object UnknownIndividual {
     override def marshall(obj: UnknownIndividual)(implicit document: Document): Node = {
       createFragment(document){
         _.createValue("AlreadyKnownOfsted", "No")
-          .createValue("IndividualId", "0") // TODO ask can we remove this
           .createValue("EY2Enclosed", obj.EY2Enclosed)(XmlMarshaller.yesNoMarshaller)
+          .createValue("IndividualId", "0") // TODO ask can we remove this
           .createValue("IndividualTitle", obj.title)
           .createValue("IndividualFirstNames", obj.firstName)
           .createValue("IndividualSurname", obj.surname)
