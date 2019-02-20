@@ -33,7 +33,7 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
                                (pendingFormList: PendingFormList,
                                 adminFormView: FormView) extends FrontendController(mcc) with I18nSupport {
 
-  def pendingForms(): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
+  def submittedForms(): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
     formRepository.findSubmitted().map { forms =>
       Ok(pendingFormList(forms))
     }(mcc.executionContext)
@@ -48,14 +48,14 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
   def accept(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
     formRepository.findSubmitted(id).flatMap { form =>
       form.accept(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext)
-        .map(_ => Redirect(routes.AdminController.pendingForms()))(mcc.executionContext)
+        .map(_ => Redirect(routes.AdminController.submittedForms()))(mcc.executionContext)
     }(mcc.executionContext)
   }
 
   def reject(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
     formRepository.findSubmitted(id).flatMap { form =>
       form.reject(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext)
-        .map(_ => Redirect(routes.AdminController.pendingForms()))(mcc.executionContext)
+        .map(_ => Redirect(routes.AdminController.submittedForms()))(mcc.executionContext)
     }(mcc.executionContext)
   }
 }
