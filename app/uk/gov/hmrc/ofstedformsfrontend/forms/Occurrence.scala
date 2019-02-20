@@ -18,10 +18,10 @@ package uk.gov.hmrc.ofstedformsfrontend.forms
 
 import java.time.ZonedDateTime
 
-import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticateUser
+import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticatedUser
 
-case class Occurrence(executor: AuthenticateUser, moment: ZonedDateTime)
+case class Occurrence(executor: AuthenticatedUser, moment: ZonedDateTime)
 
 object Occurrence {
-  def apply(executor: AuthenticateUser): Occurrence = new Occurrence(executor, ZonedDateTime.now())
+  def apply(executor: AuthenticatedUser): Occurrence = new Occurrence(executor, ZonedDateTime.now())
 }

@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.google.inject.ImplementedBy
 import javax.inject.Singleton
-import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticateUser
+import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticatedUser
 
 import scala.annotation.tailrec
 import scala.concurrent.Future
@@ -48,7 +48,7 @@ trait FormRepository {
 
   def save(form: RejectedForm): Future[RejectedForm]
 
-  def findWhereCreatorIs(creator: AuthenticateUser): Future[scala.collection.immutable.Iterable[GeneralForm]]
+  def findWhereCreatorIs(creator: AuthenticatedUser): Future[scala.collection.immutable.Iterable[GeneralForm]]
 }
 
 
@@ -96,7 +96,7 @@ final class MemoryFormRepository extends FormRepository {
     }
   }
 
-  override def findWhereCreatorIs(creator: AuthenticateUser): Future[scala.collection.immutable.Iterable[GeneralForm]] = {
+  override def findWhereCreatorIs(creator: AuthenticatedUser): Future[scala.collection.immutable.Iterable[GeneralForm]] = {
     val map = database.get()
     Future.successful {
       map.withFilter {

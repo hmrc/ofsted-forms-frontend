@@ -20,4 +20,4 @@ package uk.gov.hmrc.ofstedformsfrontend.authentication
   * Representation of authenticated user
   * @param email - identifier delivered from auth
   */
-case class AuthenticateUser(id: String, email: String)
+case class AuthenticatedUser(id: String, email: String)

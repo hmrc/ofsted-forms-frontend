@@ -22,7 +22,7 @@ import java.util.UUID
 import enumeratum._
 import play.api.mvc.PathBindable
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticateUser
+import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticatedUser
 import uk.gov.hmrc.ofstedformsfrontend.connectors.{NotificationId, NotificationsConnector}
 
 import scala.collection.immutable
@@ -61,7 +61,7 @@ trait GeneralForm {
 }
 
 object GeneralForm {
-  def create(kind: FormKind, creator: AuthenticateUser): Draft = new Draft(
+  def create(kind: FormKind, creator: AuthenticatedUser): Draft = new Draft(
     id = FormId(),
     kind = kind,
     created = Occurrence(creator)
@@ -92,7 +92,7 @@ case class SubmittedForm(id: FormId, kind: FormKind, created: Occurrence, submis
 
   override def accepted: Option[Occurrence] = None
 
-  def accept(acceptor: AuthenticateUser,
+  def accept(acceptor: AuthenticatedUser,
              notificationsConnector: NotificationsConnector,
              formRepository: FormRepository)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[ApprovedForm] = {
     val acceptance = Occurrence(acceptor, ZonedDateTime.now())
@@ -102,7 +102,7 @@ case class SubmittedForm(id: FormId, kind: FormKind, created: Occurrence, submis
     )
   }
 
-  def reject(rejector: AuthenticateUser,
+  def reject(rejector: AuthenticatedUser,
              notificationsConnector: NotificationsConnector,
              formRepository: FormRepository)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[RejectedForm] = {
     val rejection = Occurrence(rejector, ZonedDateTime.now())
@@ -120,7 +120,7 @@ case class Draft(id: FormId, kind: FormKind, created: Occurrence) extends Genera
 
   override def accepted: Option[Occurrence] = None
 
-  def submit(submitter: AuthenticateUser,
+  def submit(submitter: AuthenticatedUser,
              notificationsConnector: NotificationsConnector,
              formRepository: FormRepository)
             (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(SubmittedForm, NotificationId)] = {

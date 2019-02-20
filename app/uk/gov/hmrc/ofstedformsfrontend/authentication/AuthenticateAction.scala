@@ -24,7 +24,7 @@ import uk.gov.hmrc.play.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthenticatedRequest[A](val requester: AuthenticateUser, request: Request[A]) extends WrappedRequest[A](request)
+class AuthenticatedRequest[A](val requester: AuthenticatedUser, request: Request[A]) extends WrappedRequest[A](request)
 
 class AuthenticateActionBuilder @Inject()(val authConnector: AuthConnector,
                                           configuration: AuthenticationConfiguration,
@@ -38,7 +38,7 @@ class AuthenticateActionBuilder @Inject()(val authConnector: AuthConnector,
   override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
     authorised().retrieve(Retrievals.email and Retrievals.internalId) {
       case Some(email) ~ Some(internalId) =>
-        val user = AuthenticateUser(internalId, email)
+        val user = AuthenticatedUser(internalId, email)
         block(new AuthenticatedRequest[A](user, request))
       case _ =>
         Future.successful(Results.Forbidden("You are not have email or internalId"))

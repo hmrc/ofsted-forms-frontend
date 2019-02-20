@@ -19,7 +19,7 @@ package uk.gov.hmrc.ofstedformsfrontend.controllers
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, AuthenticateUser, AuthenticatedRequest}
+import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, AuthenticatedUser, AuthenticatedRequest}
 import uk.gov.hmrc.ofstedformsfrontend.connectors.NotificationsConnector
 import uk.gov.hmrc.ofstedformsfrontend.forms.{Draft, FormId, FormRepository, GeneralForm}
 import uk.gov.hmrc.ofstedformsfrontend.views.html
@@ -29,11 +29,11 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
 
 class FormRequest[A](val form: GeneralForm, request: AuthenticatedRequest[A]) extends WrappedRequest[A](request) {
-  def requester: AuthenticateUser = request.requester
+  def requester: AuthenticatedUser = request.requester
 }
 
 class DraftRequest[A](val form: Draft, request: AuthenticatedRequest[A]) extends WrappedRequest[A](request) {
-  def requester: AuthenticateUser = request.requester
+  def requester: AuthenticatedUser = request.requester
 }
 
 class FormController @Inject()(mcc: MessagesControllerComponents,
