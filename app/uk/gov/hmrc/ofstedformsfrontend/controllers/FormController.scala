@@ -19,15 +19,12 @@ package uk.gov.hmrc.ofstedformsfrontend.controllers
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, AuthenticatedRequest, AuthenticatedUser}
+import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticateActionBuilder
 import uk.gov.hmrc.ofstedformsfrontend.connectors.NotificationsConnector
 import uk.gov.hmrc.ofstedformsfrontend.controllers.actions.FormActions
-import uk.gov.hmrc.ofstedformsfrontend.forms.{Draft, FormId, FormRepository, GeneralForm}
+import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, FormRepository}
 import uk.gov.hmrc.ofstedformsfrontend.views.html
-import uk.gov.hmrc.play.bootstrap.controller.{BackendController, FrontendController}
-
-import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.{Failure, Success}
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class FormController @Inject()(mcc: MessagesControllerComponents,
                                forms: FormActions,

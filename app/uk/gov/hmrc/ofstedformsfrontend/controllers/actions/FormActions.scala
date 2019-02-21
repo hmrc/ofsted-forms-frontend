@@ -22,11 +22,10 @@ import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticatedRequest, Aut
 import uk.gov.hmrc.ofstedformsfrontend.forms._
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.language.existentials
 import scala.language.higherKinds
 import scala.util.{Failure, Success}
 
-class FormRequest[A, F](val form: GeneralForm, request: AuthenticatedRequest[A]) extends WrappedRequest[A](request) {
+class FormRequest[A](val form: GeneralForm, request: AuthenticatedRequest[A]) extends WrappedRequest[A](request) {
   def requester: AuthenticatedUser = request.requester
 }
 
@@ -38,65 +37,46 @@ class SubmittedRequest[A](val form: SubmittedForm, request: AuthenticatedRequest
   def requester: AuthenticatedUser = request.requester
 }
 
+trait FormRequestBuilder[A, R[_]] {
+  def build[T](form: A, request: AuthenticatedRequest[T]): R[T]
+}
 
-abstract class FormFetchAction[T <: GeneralForm, R[_] <: Request[_]](val executionContext: ExecutionContext,
-                                                                     val id: FormId) extends ActionRefiner[AuthenticatedRequest, R] {
+class FormFetchAction[T <: GeneralForm, R[_] <: Request[_]](val executionContext: ExecutionContext,
+                                                            val id: FormId)
+                                                           (fetcher: FormId => Future[T],
+                                                            builder: FormRequestBuilder[T, R]) extends ActionRefiner[AuthenticatedRequest, R] {
 
   override protected def refine[A](request: AuthenticatedRequest[A]): Future[Either[Result, R[A]]] = {
     val promise = Promise[Either[Result, R[A]]]
-    fetchForm(id).onComplete {
-      case Success(value) => promise.success(Right(buildRequest[A](value, request)))
+    fetcher(id).onComplete {
+      case Success(value) => promise.success(Right(builder.build[A](value, request)))
       case Failure(e: NoSuchElementException) => promise.success(Left(Results.NotFound(e.getMessage)))
       case Failure(_) => promise.success(Left(Results.InternalServerError))
     }(executionContext)
     promise.future
   }
-
-  abstract def fetchForm(id: FormId): Future[T]
-
-  abstract def buildRequest[A](form: T, request: AuthenticatedRequest[A]): R[A]
-}
-
-class GeneralFormFetcher(formRepository: FormRepository,
-                         executionContext: ExecutionContext,
-                         id: FormId) extends FormFetchAction[GeneralForm, FormRequest](executionContext, id) {
-
-  override def fetchForm(id: FormId): Future[GeneralForm] = formRepository.find(id)
-
-  override def buildRequest[A](form: GeneralForm, request: AuthenticatedRequest[A]): FormRequest[A] = {
-    new FormRequest[A](form, request)
-  }
-}
-
-class DraftFormFetcher(formRepository: FormRepository,
-                         executionContext: ExecutionContext,
-                         id: FormId) extends FormFetchAction[Draft, DraftRequest](executionContext, id) {
-
-  override def fetchForm(id: FormId): Future[Draft] = formRepository.findDraft(id)
-
-  override def buildRequest[A](form: Draft, request: AuthenticatedRequest[A]): DraftRequest[A] = {
-    new DraftRequest[A](form, request)
-  }
-}
-
-class DraftFormFetcher(formRepository: FormRepository,
-                       executionContext: ExecutionContext,
-                       id: FormId) extends FormFetchAction[SubmittedForm, SubmittedRequest](executionContext, id) {
-
-  override def fetchForm(id: FormId): Future[SubmittedForm] = formRepository.findSubmitted(id)
-
-  override def buildRequest[A](form: SubmittedForm, request: AuthenticatedRequest[A]): SubmittedRequest[A] = {
-    new SubmittedRequest[A](form, request)
-  }
 }
 
 class FormActions @Inject()(formRepository: FormRepository, executionContext: ExecutionContext) {
+
+  private val generalFormBuilder: FormRequestBuilder[GeneralForm, FormRequest] = new FormRequestBuilder[GeneralForm, FormRequest] {
+    override def build[T](form: GeneralForm, request: AuthenticatedRequest[T]): FormRequest[T] = new FormRequest(form, request)
+  }
+
   def fetch[P](id: FormId) =
-    new FormFetchAction[GeneralForm, FormRequest, P](executionContext, id)(formRepository.find, new FormRequest(_: GeneralForm, _: AuthenticatedRequest[P]))
+    new FormFetchAction(executionContext, id)(formRepository.find, generalFormBuilder)
 
-  def draft[P](id: FormId) =
-    new FormFetchAction[Draft, DraftRequest, P](executionContext, id)(formRepository.findDraft, new DraftRequest(_: Draft, _: AuthenticatedRequest[P]))
+  private val draftBuilder: FormRequestBuilder[Draft, DraftRequest] = new FormRequestBuilder[Draft, DraftRequest] {
+    override def build[T](form: Draft, request: AuthenticatedRequest[T]): DraftRequest[T] = new DraftRequest[T](form, request)
+  }
 
-  //  def submitted(id: FormId) =
-  //    new FormFetchAction[GeneralForm, SubmittedRequest](executionContext, id)(formRepository.findSubmitted, new SubmittedRequest(_, _))
+  def draft[P](id: FormId) = new FormFetchAction(executionContext, id)(formRepository.findDraft, draftBuilder)
+
+
+  private val submittedBuilder: FormRequestBuilder[SubmittedForm, SubmittedRequest] = new FormRequestBuilder[SubmittedForm, SubmittedRequest] {
+    override def build[T](form: SubmittedForm, request: AuthenticatedRequest[T]): SubmittedRequest[T] = new SubmittedRequest[T](form, request)
+  }
+
+  def submitted(id: FormId) = new FormFetchAction(executionContext, id)(formRepository.findSubmitted, submittedBuilder)
 }
+
