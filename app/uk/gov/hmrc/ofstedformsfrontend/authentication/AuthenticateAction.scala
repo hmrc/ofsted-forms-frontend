@@ -24,7 +24,7 @@ import uk.gov.hmrc.play.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthenticatedRequest[A](val requester: AuthenticatedUser, request: Request[A]) extends WrappedRequest[A](request)
+class AuthenticatedRequest[+A](val requester: AuthenticatedUser, request: Request[A]) extends WrappedRequest[A](request)
 
 class AuthenticateActionBuilder @Inject()(val authConnector: AuthConnector,
                                           configuration: AuthenticationConfiguration,
