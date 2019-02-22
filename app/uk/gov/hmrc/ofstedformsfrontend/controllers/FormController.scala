@@ -19,25 +19,25 @@ package uk.gov.hmrc.ofstedformsfrontend.controllers
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticateActionBuilder
+import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticateActions
 import uk.gov.hmrc.ofstedformsfrontend.connectors.NotificationsConnector
 import uk.gov.hmrc.ofstedformsfrontend.controllers.actions.FormActions
 import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, FormRepository}
-import uk.gov.hmrc.ofstedformsfrontend.views.html
+import uk.gov.hmrc.ofstedformsfrontend.views.html.FormView
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class FormController @Inject()(mcc: MessagesControllerComponents,
                                forms: FormActions,
                                formRepository: FormRepository,
                                notificationsConnector: NotificationsConnector,
-                               authenticate: AuthenticateActionBuilder)
-                              (form_view: html.form_view) extends FrontendController(mcc) with I18nSupport {
+                               authenticate: AuthenticateActions)
+                              (formView: FormView) extends FrontendController(mcc) with I18nSupport {
 
-  def show(id: FormId) = (authenticate andThen forms.fetch(id)) (parse.empty) { implicit request =>
-    Ok(form_view(request.form))
+  def show(id: FormId): Action[Unit] = (authenticate andThen forms.fetch(id)) (parse.empty) { implicit request =>
+    Ok(formView(request.form))
   }
 
-  def submmision(id: FormId) = (authenticate andThen forms.draft(id)).async { implicit request =>
+  def submmision(id: FormId): Action[Unit] = (authenticate andThen forms.draft(id)).async(parse.empty) { implicit request =>
     request.form.submit(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext).map( _ =>
       Redirect(routes.FormsController.all())
     )(mcc.executionContext)

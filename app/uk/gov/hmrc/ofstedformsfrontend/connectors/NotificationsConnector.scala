@@ -18,6 +18,7 @@ package uk.gov.hmrc.ofstedformsfrontend.connectors
 
 import java.util.UUID
 
+import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Named, Singleton}
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
@@ -35,10 +36,17 @@ object NotificationId {
   }
 }
 
+@ImplementedBy(classOf[HttpNotificationsConnector])
+trait NotificationsConnector {
+  def submission(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId]
+  def acceptance(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId]
+  def rejection(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId]
+}
+
 @Singleton
-class NotificationsConnector @Inject()(httpClient: HttpClient,
+class HttpNotificationsConnector @Inject()(httpClient: HttpClient,
                                       @Named("ofsted-forms-notifications-base-url") baseUrl: String)
-                                      (implicit ec: ExecutionContext){
+                                      (implicit ec: ExecutionContext) extends NotificationsConnector {
 
   private val submissionUrl = baseUrl + "/ofsted-forms-notifications/submission"
 

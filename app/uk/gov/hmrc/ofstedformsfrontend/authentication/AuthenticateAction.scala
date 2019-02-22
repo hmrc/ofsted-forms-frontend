@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.authentication
 
+import com.google.inject.ImplementedBy
 import javax.inject.Inject
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve._
@@ -26,11 +27,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AuthenticatedRequest[+A](val requester: AuthenticatedUser, request: Request[A]) extends WrappedRequest[A](request)
 
+@ImplementedBy(classOf[AuthenticateActionBuilder])
+trait AuthenticateActions extends ActionBuilder[AuthenticatedRequest, AnyContent]
+
 class AuthenticateActionBuilder @Inject()(val authConnector: AuthConnector,
                                           configuration: AuthenticationConfiguration,
                                           val parser: BodyParsers.Default,
-                                          val executionContext: ExecutionContext)
-  extends ActionBuilder[AuthenticatedRequest, AnyContent] with AuthorisedFunctions {
+                                          val executionContext: ExecutionContext) extends AuthenticateActions with AuthorisedFunctions {
 
   private def extractHeaders(rh: RequestHeader) =
     HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, Some(rh.session), Some(rh))

@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.controllers.actions
 
+import com.google.inject.ImplementedBy
 import javax.inject.Inject
-import play.api.mvc._
+import play.api.mvc.{ActionRefiner, _}
 import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticatedRequest, AuthenticatedUser}
 import uk.gov.hmrc.ofstedformsfrontend.forms._
 
@@ -57,26 +58,35 @@ class FormFetchAction[T <: GeneralForm, R[_] <: Request[_]](val executionContext
   }
 }
 
-class FormActions @Inject()(formRepository: FormRepository, executionContext: ExecutionContext) {
+@ImplementedBy(classOf[RepositoryFormActions])
+trait FormActions {
+  def fetch[P](id: FormId): ActionRefiner[AuthenticatedRequest, FormRequest]
+  def draft[P](id: FormId): ActionRefiner[AuthenticatedRequest, DraftRequest]
+  def submitted(id: FormId): ActionRefiner[AuthenticatedRequest, SubmittedRequest]
+}
+
+class RepositoryFormActions @Inject()(formRepository: FormRepository, executionContext: ExecutionContext) extends FormActions {
 
   private val generalFormBuilder: FormRequestBuilder[GeneralForm, FormRequest] = new FormRequestBuilder[GeneralForm, FormRequest] {
     override def build[T](form: GeneralForm, request: AuthenticatedRequest[T]): FormRequest[T] = new FormRequest(form, request)
   }
 
-  def fetch[P](id: FormId) =
+  def fetch[P](id: FormId): ActionRefiner[AuthenticatedRequest, FormRequest] =
     new FormFetchAction(executionContext, id)(formRepository.find, generalFormBuilder)
 
   private val draftBuilder: FormRequestBuilder[Draft, DraftRequest] = new FormRequestBuilder[Draft, DraftRequest] {
     override def build[T](form: Draft, request: AuthenticatedRequest[T]): DraftRequest[T] = new DraftRequest[T](form, request)
   }
 
-  def draft[P](id: FormId) = new FormFetchAction(executionContext, id)(formRepository.findDraft, draftBuilder)
+  def draft[P](id: FormId): ActionRefiner[AuthenticatedRequest, DraftRequest] =
+    new FormFetchAction(executionContext, id)(formRepository.findDraft, draftBuilder)
 
 
   private val submittedBuilder: FormRequestBuilder[SubmittedForm, SubmittedRequest] = new FormRequestBuilder[SubmittedForm, SubmittedRequest] {
     override def build[T](form: SubmittedForm, request: AuthenticatedRequest[T]): SubmittedRequest[T] = new SubmittedRequest[T](form, request)
   }
 
-  def submitted(id: FormId) = new FormFetchAction(executionContext, id)(formRepository.findSubmitted, submittedBuilder)
+  def submitted(id: FormId): ActionRefiner[AuthenticatedRequest, SubmittedRequest] =
+    new FormFetchAction(executionContext, id)(formRepository.findSubmitted, submittedBuilder)
 }
 

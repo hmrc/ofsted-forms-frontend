@@ -26,13 +26,13 @@ import uk.gov.hmrc.ofstedformsfrontend.forms._
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
-class FormActionsSpec extends FlatSpec with MockitoSugar with Matchers {
+class RepositoryFormActionsSpec extends FlatSpec with MockitoSugar with Matchers {
 
   val executionContext: ExecutionContextExecutor = ExecutionContext.global
 
   val formRepository: FormRepository = mock[FormRepository]
 
-  val actions = new FormActions(formRepository, executionContext)
+  val actions = new RepositoryFormActions(formRepository, executionContext)
 
   it should "fetch general form" in {
     val id = FormId()

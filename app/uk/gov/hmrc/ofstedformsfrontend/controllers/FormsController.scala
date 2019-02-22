@@ -20,13 +20,13 @@ import javax.inject.{Inject, Singleton}
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, MessagesControllerComponents}
-import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, CheckAdminPass}
+import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActions, CheckAdminPass}
 import uk.gov.hmrc.ofstedformsfrontend.forms.{FormKind, FormRepository, GeneralForm}
 import uk.gov.hmrc.ofstedformsfrontend.views.html
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 @Singleton
-class FormsController @Inject()(authenticate: AuthenticateActionBuilder,
+class FormsController @Inject()(authenticate: AuthenticateActions,
                                 checkAdminPass: CheckAdminPass,
                                 mcc: MessagesControllerComponents,
                                 formRepository: FormRepository)

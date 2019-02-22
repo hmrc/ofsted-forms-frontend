@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.controllers
+package uk.gov.hmrc.ofstedformsfrontend.forms
 
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
