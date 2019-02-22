@@ -63,7 +63,7 @@ class TemplateTests extends FlatSpec with GuiceOneAppPerSuite with Matchers {
   }
 
   "Error Template" should "render correctly" in {
-    val template = app.injector.instanceOf[error_template]
-    template() shouldNot be (empty)
+    val template = app.injector.instanceOf[html.error_template]
+    template("Title", "Heading", "Message") shouldNot be (empty)
   }
 }
