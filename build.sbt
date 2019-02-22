@@ -17,7 +17,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalacOptions += "-Ypartial-unification")
   .settings(
     coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*\.Reverse[^.]*""",
-    coverageMinimum := 80.00,
+    coverageMinimum := 70.00,
     coverageFailOnMinimum := true,
     coverageHighlighting := true,
     parallelExecution in Test := false
