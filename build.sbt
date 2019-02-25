@@ -15,5 +15,12 @@ lazy val microservice = Project(appName, file("."))
   .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(scalacOptions += "-Ypartial-unification")
+  .settings(
+    coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*\.Reverse[^.]*""",
+    coverageMinimum := 70.00,
+    coverageFailOnMinimum := true,
+    coverageHighlighting := true,
+    parallelExecution in Test := false
+  )
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3")

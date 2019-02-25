@@ -18,26 +18,17 @@ package uk.gov.hmrc.ofstedformsfrontend.controllers
 
 import java.util.concurrent.atomic.AtomicReference
 
-import ltbs.uniform.interpreters.playframework._
-import cats._
-import cats.data._
-
-import concurrent.{ExecutionContext, Future}
-import org.atnos.eff._
-import play.api._
-import mvc._
-import play.api.data._
-import Forms._
 import javax.inject.{Inject, Singleton}
-import ltbs.uniform.{ErrorTree, _}
+import ltbs.uniform.ErrorTree
+import ltbs.uniform.interpreters.playframework._
 import ltbs.uniform.web._
+import play.api._
 import play.api.i18n.I18nSupport
+import play.api.mvc._
 import play.twirl.api.Html
-import uk.gov.hmrc.ofstedformsfrontend.examples.GreasySpoon
-import uk.gov.hmrc.ofstedformsfrontend.examples.GreasySpoon.GreasyStack
 import uk.gov.hmrc.ofstedformsfrontend.views._
 
-import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future}
 
 object MemoryPersistence extends Persistence {
   private val storage = new AtomicReference(Map.empty[String, String])
@@ -58,18 +49,6 @@ object MemoryPersistence extends Persistence {
 class UniformController @Inject()(mcc: MessagesControllerComponents)
                                  (chrome: html.FormChrome)
                                  (implicit executionContext: ExecutionContext) extends AbstractController(mcc) with PlayInterpreter with I18nSupport {
-
-  type CombinedStack = FxAppend[GreasyStack, PlayStack]
-
-  def convertedProgram(implicit request: Request[AnyContent], targetId: String) ={
-    import ltbs.uniform.web.parser._
-    import ltbs.uniform.widgets.govuk._
-    GreasySpoon.greasySpoon[CombinedStack]
-      .useForm(PlayForm.automatic[Int])      // map Int fields
-      .useForm(PlayForm.automatic[Boolean])  // map Boolean fields
-  }
-
-
 
   def messages(request: Request[AnyContent]): Messages = {
     val playMessages = messagesApi.preferred(request)
@@ -93,7 +72,7 @@ class UniformController @Inject()(mcc: MessagesControllerComponents)
 
   def form(implicit key: String) = Action.async { implicit request =>
     runWeb(
-      program = convertedProgram(request, key),
+      program = ???,
       persistence = MemoryPersistence
     ){ result =>
       Future.successful(Results.Ok(result.toString))

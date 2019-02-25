@@ -18,15 +18,17 @@ package uk.gov.hmrc.ofstedformsfrontend.controllers
 
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, MessagesControllerComponents}
-import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActionBuilder, CheckAdminPass}
+import play.api.mvc.{Action, ControllerComponents, MessagesControllerComponents}
+import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticateActions, CheckAdminPass}
 import uk.gov.hmrc.ofstedformsfrontend.connectors.NotificationsConnector
+import uk.gov.hmrc.ofstedformsfrontend.controllers.actions.{FormActions, RepositoryFormActions}
 import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, FormRepository}
 import uk.gov.hmrc.ofstedformsfrontend.views.html.admin._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class AdminController @Inject()(mcc: MessagesControllerComponents,
-                                authenticate: AuthenticateActionBuilder,
+                                authenticate: AuthenticateActions,
+                                forms: FormActions,
                                 checkAdminPass: CheckAdminPass,
                                 formRepository: FormRepository,
                                 notificationsConnector: NotificationsConnector)
@@ -39,23 +41,17 @@ class AdminController @Inject()(mcc: MessagesControllerComponents,
     }(mcc.executionContext)
   }
 
-  def showForm(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
-    formRepository.findSubmitted(id).map { form =>
-      Ok(adminFormView(form))
-    }(mcc.executionContext)
+  def showForm(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass andThen forms.submitted(id)) (parse.empty) { implicit request =>
+    Ok(adminFormView(request.form))
   }
 
-  def accept(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
-    formRepository.findSubmitted(id).flatMap { form =>
-      form.accept(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext)
-        .map(_ => Redirect(routes.AdminController.submittedForms()))(mcc.executionContext)
-    }(mcc.executionContext)
+  def accept(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass andThen forms.submitted(id)).async(parse.empty) { implicit request =>
+    request.form.accept(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext)
+      .map(_ => Redirect(routes.AdminController.submittedForms()))(mcc.executionContext)
   }
 
-  def reject(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass).async(parse.empty) { implicit request =>
-    formRepository.findSubmitted(id).flatMap { form =>
-      form.reject(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext)
-        .map(_ => Redirect(routes.AdminController.submittedForms()))(mcc.executionContext)
-    }(mcc.executionContext)
+  def reject(id: FormId): Action[Unit] = (authenticate andThen checkAdminPass andThen forms.submitted(id)).async(parse.empty) { implicit request =>
+    request.form.reject(request.requester, notificationsConnector, formRepository)(hc(request), mcc.executionContext)
+      .map(_ => Redirect(routes.AdminController.submittedForms()))(mcc.executionContext)
   }
 }

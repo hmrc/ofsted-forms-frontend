@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ofstedformsfrontend.uniform
+package uk.gov.hmrc.ofstedformsfrontend
 
-import org.atnos.eff._
-import ltbs.uniform._
+import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticatedUser
 
-case class Pizza(size: Int, toppings: List[String], base: Int)
+object Example {
 
-class ExampleProgram {
+  val user = AuthenticatedUser("userId", "user@example.com")
 
-  def intProgram[Stack : _uniform[Int, ?]]: Eff[Stack, Int] = for {
-    value <- uask[Stack, Int]("favouriteNumber")
-  } yield value
-
-  def pizzaProgram[Stack: _uniform[Int, ?] : _uniform[List[String], ?]]: Eff[Stack, Pizza] = for {
-    size <- uask[Stack, Int]("size")
-    toppings <- uask[Stack, List[String]]("toppings")
-    base <- uask[Stack, Int]("base")
-  } yield Pizza(size, toppings, base)
+  val admin = AuthenticatedUser("adminId", "admin@example.com")
 }
