@@ -23,14 +23,18 @@ import scala.concurrent.{ExecutionContext, Future}
 
 
 // TODO namining of this class
-class CheckAdminPass @Inject()(@Named("admins") admins: Set[String],
+class CheckAdminPass @Inject()(@Named("admins-ips") whitelist: Set[String],
                                val executionContext: ExecutionContext) extends ActionFilter[AuthenticatedRequest] {
+
+  private val unathorized =  Some(Results.Forbidden("You are not on list of admins"))
+
   override protected def filter[A](request: AuthenticatedRequest[A]): Future[Option[Result]] = Future.successful {
-    val requester = request.requester
-    if (admins.contains(requester.email)) {
-      None
-    } else {
-      Some(Results.Forbidden("You are not on list of admins"))
-    }
+    request.headerCarrier.trueClientIp.map { ip =>
+      if (whitelist.contains(ip)) {
+        None
+      } else {
+        unathorized
+      }
+    }.getOrElse(unathorized)
   }
 }
