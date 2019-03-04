@@ -21,6 +21,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import play.api.mvc.{AnyContent, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticatedRequest, AuthenticatedUser}
 import uk.gov.hmrc.ofstedformsfrontend.forms._
 
@@ -34,11 +35,13 @@ class RepositoryFormActionsSpec extends FlatSpec with MockitoSugar with Matchers
 
   val actions = new RepositoryFormActions(formRepository, executionContext)
 
+  val headerCarrier = HeaderCarrier()
+
   it should "fetch general form" in {
     val id = FormId()
     val user = AuthenticatedUser("internalId", "user@example.com")
     when(formRepository.find(id)) thenReturn Future.successful(Draft(id, FormKind.SC1, Occurrence(user)))
-    val request = new AuthenticatedRequest(user,FakeRequest("POST", "/"))
+    val request = new AuthenticatedRequest(user, headerCarrier, FakeRequest("POST", "/"))
     status {
       actions.fetch(id).invokeBlock[AnyContent](request, request => {
         request.form.id shouldEqual id
@@ -51,7 +54,7 @@ class RepositoryFormActionsSpec extends FlatSpec with MockitoSugar with Matchers
     val id = FormId()
     val user = AuthenticatedUser("internalId", "user@example.com")
     when(formRepository.findDraft(id)) thenReturn Future.successful(Draft(id, FormKind.SC1, Occurrence(user)))
-    val request = new AuthenticatedRequest(user,FakeRequest("POST", "/"))
+    val request = new AuthenticatedRequest(user, headerCarrier, FakeRequest("POST", "/"))
     status {
       actions.draft(id).invokeBlock[AnyContent](request, request => {
         request.form.id shouldEqual id
@@ -64,7 +67,7 @@ class RepositoryFormActionsSpec extends FlatSpec with MockitoSugar with Matchers
     val id = FormId()
     val user = AuthenticatedUser("internalId", "user@example.com")
     when(formRepository.findSubmitted(id)) thenReturn Future.successful(SubmittedForm(id, FormKind.SC1, Occurrence(user), Occurrence(user)))
-    val request = new AuthenticatedRequest(user,FakeRequest("POST", "/"))
+    val request = new AuthenticatedRequest(user, headerCarrier, FakeRequest("POST", "/"))
     status {
       actions.submitted(id).invokeBlock[AnyContent](request, request => {
         request.form.id shouldEqual id

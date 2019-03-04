@@ -38,6 +38,20 @@ class Module extends AbstractModule {
     servicesConfig.baseUrl("ofsted-forms-notifications")
   }
 
+  @Provides
+  @Named("self-base-url")
+  @Singleton
+  def ofstedFormsFrontendBaseUrl(servicesConfig: ServicesConfig): String = {
+    servicesConfig.baseUrl("ofsted-forms-frontend")
+  }
+
+  @Provides
+  @Named("upscan-initiate-base-url")
+  @Singleton
+  def upscanInitiateBaseUrl(servicesConfig: ServicesConfig): String = {
+    servicesConfig.baseUrl("upscan-initiate")
+  }
+
   override def configure(): Unit = {
     bind(classOf[AuthenticationConfiguration]).toProvider(classOf[AuthenticationConfigurationProvider])
   }

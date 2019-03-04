@@ -20,6 +20,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import play.api.mvc.{AnyContent, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,9 +30,11 @@ class CheckAdminPassSpec extends FlatSpec with Matchers {
 
   val check = new CheckAdminPass(Set("admin@example.com"), executionContext)
 
-  val adminRequest = new AuthenticatedRequest(AuthenticatedUser("admin-internalId", "admin@example.com"), FakeRequest("POST", "/"))
+  val headerCarrier = HeaderCarrier()
 
-  val userRequest = new AuthenticatedRequest(AuthenticatedUser("user-internalId", "user@example.com"), FakeRequest("POST", "/"))
+  val adminRequest = new AuthenticatedRequest(AuthenticatedUser("admin-internalId", "admin@example.com"), headerCarrier, FakeRequest("POST", "/"))
+
+  val userRequest = new AuthenticatedRequest(AuthenticatedUser("user-internalId", "user@example.com"), headerCarrier, FakeRequest("POST", "/"))
 
   it should "pass admin" in {
     val response = check.invokeBlock[AnyContent](adminRequest, _ => Future.successful(Results.Ok("Ok")))
