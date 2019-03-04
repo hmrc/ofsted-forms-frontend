@@ -25,10 +25,10 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 class Module extends AbstractModule {
 
   @Provides
-  @Named("admins")
+  @Named("admins-ips")
   @Singleton
   def adminsFromConfig(configuration: Configuration): Set[String] = {
-    configuration.get[Set[String]]("ofsted-forms.admins")(ConfigLoader.seqStringLoader.map(_.toSet))
+    configuration.get[Set[String]]("ofsted-forms.admins-ips")(ConfigLoader.seqStringLoader.map(_.toSet))
   }
 
   @Provides
