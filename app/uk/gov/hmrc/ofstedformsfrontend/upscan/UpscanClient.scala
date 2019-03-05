@@ -16,13 +16,21 @@
 
 package uk.gov.hmrc.ofstedformsfrontend.upscan
 
+import akka.http.javadsl.model.MediaTypes
+import akka.stream.Materializer
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 import javax.inject.{Inject, Named}
+import play.api.Logger
 import play.api.libs.json.{JsError, Json}
-import play.api.mvc.Call
+import play.api.libs.ws.WSClient
+import play.api.mvc.{Call, MultipartFormData}
+import play.mvc.Http.{Response, Status}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 case class UploadRequest(href: String, fields: Map[String, String])
 
@@ -52,9 +60,10 @@ object UploadDescriptor {
 }
 
 class UpscanClient @Inject()(httpClient: HttpClient,
+                             wsClient: WSClient,
                             @Named("upscan-initiate-base-url") upscanBaseUrl: String,
                             @Named("self-base-url") selfBaseUrl: String)
-                            (implicit executionContext: ExecutionContext) {
+                            (implicit executionContext: ExecutionContext, materializer: Materializer) {
 
   private val initiateUrl = upscanBaseUrl + "/upscan/initiate"
 
@@ -69,13 +78,31 @@ class UpscanClient @Inject()(httpClient: HttpClient,
       response.json.validate[UploadDescriptor]
         .map(Future.successful)
         .recoverTotal(error => Future.failed(UpscanException.byJsError(error)))
-    )
+    ).andThen {
+      case response => Logger.error(response.toString)
+    }
   }
 
   def initiate(callback: Call, minimumFileSize: Long = 0, maximumFileSize: Long = 100000000)
               (implicit hc: HeaderCarrier): Future[UploadDescriptor] = {
     initiate(selfBaseUrl + callback.url, minimumFileSize, maximumFileSize)
   }
+
+  def upload(href: String, form: MultipartFormData[Source[ByteString, _]])(implicit headerCarrier: HeaderCarrier): Future[Unit]  = {
+
+    val parts: Source[MultipartFormData.Part[Source[ByteString, _]], _] = Source.apply( form.dataParts.flatMap{
+      case (key, values) => values.map(value => MultipartFormData.DataPart(key, value): MultipartFormData.Part[Source[ByteString, _]])
+    } ++ form.files)
+    Await.ready(parts.runForeach(entry => Logger.error(entry.toString)), Duration.Inf)
+    wsClient.url(href).post(parts).map { response =>
+      println(response)
+      if(response.status != Status.NO_CONTENT){
+        throw new UpscanException("S3 did not return 204 status code - " + headerCarrier.requestId)
+      }
+      Unit
+    }
+  }
+
 
 }
 

@@ -25,7 +25,9 @@ import play.twirl.api.Html
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticatedRequest
 import uk.gov.hmrc.ofstedformsfrontend.forms._
+import uk.gov.hmrc.ofstedformsfrontend.upscan.UpscanClient
 import uk.gov.hmrc.ofstedformsfrontend.views.html.FormView
+import uk.gov.hmrc.ofstedformsfrontend.views.html.upscan.UploadForm
 import uk.gov.hmrc.ofstedformsfrontend.{Example, Fake}
 
 import scala.concurrent.Future
@@ -35,7 +37,11 @@ class FormControllerSpec extends WordSpec with Matchers with MockitoSugar with R
 
   val formRepository: FormRepository = mock[FormRepository]
 
+  val upscanClient: UpscanClient = mock[UpscanClient]
+
   val formView: FormView = mock[FormView]
+
+  val uploadForm: UploadForm = mock[UploadForm]
 
   val headerCarrier = HeaderCarrier()
 
@@ -55,9 +61,10 @@ class FormControllerSpec extends WordSpec with Matchers with MockitoSugar with R
         mcc = stubMessagesControllerComponents,
         forms = Fake.formActions(general = Some(draft), draftStub = Some(draft)),
         formRepository = formRepository,
+        upscanClient = upscanClient,
         notificationsConnector = Fake.notificationsConnector,
         authenticate = Fake.loggedAs(Example.admin)
-      )(formView)
+      )(formView, uploadForm)
 
       "allow to get form" in {
 
@@ -80,9 +87,10 @@ class FormControllerSpec extends WordSpec with Matchers with MockitoSugar with R
         mcc = stubMessagesControllerComponents,
         forms = Fake.formActions(general = Some(draft), draftStub = Some(draft)),
         formRepository = formRepository,
+        upscanClient = upscanClient,
         notificationsConnector = Fake.notificationsConnector,
         authenticate = Fake.loggedAs(Example.user)
-      )(formView)
+      )(formView, uploadForm)
 
       "allow to get form" in {
         whenReady(controller.show(draft.id).apply(request)){ response =>
