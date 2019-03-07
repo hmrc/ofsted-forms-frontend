@@ -29,12 +29,11 @@ class CheckAdminPass @Inject()(@Named("admins-ips") whitelist: Set[String],
   private val unathorized =  Some(Results.Forbidden("You are not on list of admins"))
 
   override protected def filter[A](request: AuthenticatedRequest[A]): Future[Option[Result]] = Future.successful {
-    request.headerCarrier.trueClientIp.map { ip =>
-      if (whitelist.contains(ip)) {
-        None
-      } else {
-        unathorized
-      }
-    }.getOrElse(unathorized)
+    val ip = request.headerCarrier.trueClientIp.getOrElse(request.connection.remoteAddressString)
+    if (whitelist.contains(ip)) {
+      None
+    } else {
+      unathorized
+    }
   }
 }
