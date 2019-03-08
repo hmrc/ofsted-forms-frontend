@@ -87,9 +87,7 @@ class UpscanClient @Inject()(httpClient: HttpClient,
       response.json.validate[UploadDescriptor]
         .map(Future.successful)
         .recoverTotal(error => Future.failed(UpscanException.byJsError(error)))
-    ).andThen {
-      case response => logger.error(response.toString)
-    }
+    )
   }
 
   def initiate(callback: Call, minimumFileSize: Long = 0, maximumFileSize: Long = 100000000)
