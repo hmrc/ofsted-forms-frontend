@@ -21,16 +21,21 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import javax.inject.{Inject, Named}
-import play.api.Logger
+import org.joda.time.DateTime
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.{JsError, Json}
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Call, MultipartFormData}
 import play.mvc.Http.{Response, Status}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.play.audit.http.HeaderFieldsExtractor
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.model.{DataCall, MergedDataEvent}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 case class UploadRequest(href: String, fields: Map[String, String])
 
@@ -61,9 +66,13 @@ object UploadDescriptor {
 
 class UpscanClient @Inject()(httpClient: HttpClient,
                              wsClient: WSClient,
-                            @Named("upscan-initiate-base-url") upscanBaseUrl: String,
-                            @Named("self-base-url") selfBaseUrl: String)
+                             auditConnector: AuditConnector,
+                             @Named("appName") serviceName: String,
+                             @Named("upscan-initiate-base-url") upscanBaseUrl: String,
+                             @Named("self-base-url") selfBaseUrl: String)
                             (implicit executionContext: ExecutionContext, materializer: Materializer) {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val initiateUrl = upscanBaseUrl + "/upscan/initiate"
 
@@ -71,15 +80,15 @@ class UpscanClient @Inject()(httpClient: HttpClient,
               (implicit hc: HeaderCarrier): Future[UploadDescriptor] = {
     val payload = Json.obj(
       "callbackUrl" -> callbackUrl,
-      "minimumFileSize" ->  minimumFileSize,
-      "maximumFileSize"  -> maximumFileSize
+      "minimumFileSize" -> minimumFileSize,
+      "maximumFileSize" -> maximumFileSize
     )
-    httpClient.POST(initiateUrl, payload).flatMap( response =>
+    httpClient.POST(initiateUrl, payload).flatMap(response =>
       response.json.validate[UploadDescriptor]
         .map(Future.successful)
         .recoverTotal(error => Future.failed(UpscanException.byJsError(error)))
     ).andThen {
-      case response => Logger.error(response.toString)
+      case response => logger.error(response.toString)
     }
   }
 
@@ -88,15 +97,43 @@ class UpscanClient @Inject()(httpClient: HttpClient,
     initiate(selfBaseUrl + callback.url, minimumFileSize, maximumFileSize)
   }
 
-  def upload(href: String, form: MultipartFormData[Source[ByteString, _]])(implicit headerCarrier: HeaderCarrier): Future[Unit]  = {
+  def upload(href: String, form: MultipartFormData[Source[ByteString, _]])(implicit headerCarrier: HeaderCarrier): Future[Unit] = {
 
-    val parts: Source[MultipartFormData.Part[Source[ByteString, _]], _] = Source.apply( form.dataParts.flatMap{
+    val parts: Source[MultipartFormData.Part[Source[ByteString, _]], _] = Source.apply(form.dataParts.flatMap {
       case (key, values) => values.map(value => MultipartFormData.DataPart(key, value): MultipartFormData.Part[Source[ByteString, _]])
     } ++ form.files)
-    Await.ready(parts.runForeach(entry => Logger.error(entry.toString)), Duration.Inf)
-    wsClient.url(href).post(parts).map { response =>
-      println(response)
-      if(response.status != Status.NO_CONTENT){
+    val requestData = DataCall(
+      tags = Map.empty,
+      detail = Map(
+        "method" -> "POST",
+        "path" -> href
+      ),
+      generatedAt = DateTime.now()
+    )
+    wsClient.url(href).post(parts).andThen {
+      case Failure(exception) =>
+        val responseData = DataCall(
+          tags = Map.empty,
+          detail = Map(
+            "message" -> exception.getMessage
+          ),
+          generatedAt = DateTime.now()
+        )
+        logger.warn("Error on uploading file to upscan", exception)
+        auditConnector.sendMergedEvent(MergedDataEvent(serviceName, "OutboundCall", request = requestData, response = responseData))
+      case Success(response) =>
+        val responseData = DataCall(
+          tags = Map.empty,
+          detail = Map(
+            "statusCode" -> String.valueOf(response.status),
+            "responseMessage" -> response.body[String]
+          ),
+          generatedAt = DateTime.now()
+        )
+        auditConnector.sendMergedEvent(MergedDataEvent(serviceName, "OutboundCall", request = requestData, response = responseData))
+        logger.info("Recieve successful repsonse form {} with status {}", href, response.status)
+    }.map { response =>
+      if (response.status != Status.NO_CONTENT) {
         throw new UpscanException("S3 did not return 204 status code - " + headerCarrier.requestId)
       }
       Unit
