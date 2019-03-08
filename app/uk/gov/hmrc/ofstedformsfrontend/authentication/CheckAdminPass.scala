@@ -26,14 +26,14 @@ import scala.concurrent.{ExecutionContext, Future}
 class CheckAdminPass @Inject()(@Named("admins-ips") whitelist: Set[String],
                                val executionContext: ExecutionContext) extends ActionFilter[AuthenticatedRequest] {
 
-  private val unathorized =  Some(Results.Forbidden("You are not on list of admins"))
+  private val forbidden =  Some(Results.Forbidden("You are not on list of admins"))
 
   override protected def filter[A](request: AuthenticatedRequest[A]): Future[Option[Result]] = Future.successful {
     val ip = request.headerCarrier.trueClientIp.getOrElse(request.connection.remoteAddressString)
     if (whitelist.contains(ip)) {
       None
     } else {
-      unathorized
+      forbidden
     }
   }
 }
