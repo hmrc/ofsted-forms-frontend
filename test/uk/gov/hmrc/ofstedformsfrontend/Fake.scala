@@ -31,11 +31,11 @@ import scala.concurrent.{ExecutionContext, Future}
 object Fake {
   val checkAdminPass = new CheckAdminPass(Set("admin@example.com"), ExecutionContext.global)
 
-  def loggedAs(user: AuthenticatedUser): AuthenticateActions = new AuthenticateActions {
+  def loggedAs(user: AuthenticatedUser, hc: HeaderCarrier = HeaderCarrier()): AuthenticateActions = new AuthenticateActions {
     override def parser: BodyParser[AnyContent] = Helpers.stubBodyParser()
 
     override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
-      block(new AuthenticatedRequest(user, request))
+      block(new AuthenticatedRequest(user, hc, request))
     }
 
     override protected def executionContext: ExecutionContext = ExecutionContext.global

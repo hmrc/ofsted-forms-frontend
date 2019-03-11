@@ -22,9 +22,12 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticatedRequest
 import uk.gov.hmrc.ofstedformsfrontend.forms._
+import uk.gov.hmrc.ofstedformsfrontend.upscan.UpscanClient
 import uk.gov.hmrc.ofstedformsfrontend.views.html.FormView
+import uk.gov.hmrc.ofstedformsfrontend.views.html.upscan.UploadForm
 import uk.gov.hmrc.ofstedformsfrontend.{Example, Fake}
 
 import scala.concurrent.Future
@@ -34,7 +37,15 @@ class FormControllerSpec extends WordSpec with Matchers with MockitoSugar with R
 
   val formRepository: FormRepository = mock[FormRepository]
 
+  val upscanClient: UpscanClient = mock[UpscanClient]
+
   val formView: FormView = mock[FormView]
+
+  val uploadForm: UploadForm = mock[UploadForm]
+
+  val headerCarrier = HeaderCarrier()
+
+  val request = new AuthenticatedRequest(Example.admin, headerCarrier, FakeRequest("GET", "/").withBody((): Unit))
 
   override protected def beforeEach(): Unit = {
     when(formView.apply(*)(*, *)).thenAnswer(Html.apply(""))
@@ -43,8 +54,6 @@ class FormControllerSpec extends WordSpec with Matchers with MockitoSugar with R
   }
 
   "Form Controller" when {
-
-
     "deals with admin" should {
       val draft = Draft(FormId(), FormKind.SC1, Occurrence(Example.admin))
 
@@ -52,19 +61,19 @@ class FormControllerSpec extends WordSpec with Matchers with MockitoSugar with R
         mcc = stubMessagesControllerComponents,
         forms = Fake.formActions(general = Some(draft), draftStub = Some(draft)),
         formRepository = formRepository,
+        upscanClient = upscanClient,
         notificationsConnector = Fake.notificationsConnector,
         authenticate = Fake.loggedAs(Example.admin)
-      )(formView)
+      )(formView, uploadForm)
 
       "allow to get form" in {
-        val request = new AuthenticatedRequest(Example.admin, FakeRequest("GET", "/").withBody((): Unit))
+
         whenReady(controller.show(draft.id).apply(request)){ response =>
           response.header.status shouldEqual 200
         }
       }
 
       "allow to submit form" in {
-        val request = new AuthenticatedRequest(Example.admin, FakeRequest("GET", "/").withBody((): Unit))
         whenReady(controller.submmision(draft.id).apply(request)){ response =>
           response.header.status shouldEqual 303
         }
@@ -73,15 +82,15 @@ class FormControllerSpec extends WordSpec with Matchers with MockitoSugar with R
 
     "deals with user" should {
       val draft = Draft(FormId(), FormKind.SC1, Occurrence(Example.user))
-      val request = new AuthenticatedRequest(Example.user, FakeRequest("GET", "/").withBody((): Unit))
 
       val controller = new FormController(
         mcc = stubMessagesControllerComponents,
         forms = Fake.formActions(general = Some(draft), draftStub = Some(draft)),
         formRepository = formRepository,
+        upscanClient = upscanClient,
         notificationsConnector = Fake.notificationsConnector,
         authenticate = Fake.loggedAs(Example.user)
-      )(formView)
+      )(formView, uploadForm)
 
       "allow to get form" in {
         whenReady(controller.show(draft.id).apply(request)){ response =>
