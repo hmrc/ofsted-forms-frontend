@@ -27,7 +27,7 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticatedUser
-import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, Occurrence}
+import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, FormKind, Occurrence}
 
 class NotificationsConnectorSpec extends FlatSpec with Matchers with MockitoSugar with GuiceOneAppPerSuite
   with ScalaFutures with WiremockSpec with BeforeAndAfterAll with IntegrationPatience {
@@ -69,7 +69,8 @@ class NotificationsConnectorSpec extends FlatSpec with Matchers with MockitoSuga
     """{
       |  "time" : "2004-02-12T15:19:21Z",
       |  "email" : "jan.kowalski@example.com",
-      |  "id" : "da7740d5-6026-4cdd-bbc1-10cb077cc47b"
+      |  "id" : "da7740d5-6026-4cdd-bbc1-10cb077cc47b",
+      |  "kind" : "SC1"
       |}
     """.stripMargin
   )
@@ -78,7 +79,7 @@ class NotificationsConnectorSpec extends FlatSpec with Matchers with MockitoSuga
 
   it should "make correct request to service on submission" in {
     val connector = app.injector.instanceOf[NotificationsConnector]
-    connector.submission(formId, email, moment).futureValue
+    connector.submission(formId, email, moment, FormKind.SC1).futureValue
     wiremockServer.verify(
       postRequestedFor(urlEqualTo("/ofsted-forms-notifications/submission"))
         .withRequestBody(expected)
@@ -87,7 +88,7 @@ class NotificationsConnectorSpec extends FlatSpec with Matchers with MockitoSuga
 
   it should "make correct request to service on acceptance" in {
     val connector = app.injector.instanceOf[NotificationsConnector]
-    connector.acceptance(formId, email, moment).futureValue
+    connector.acceptance(formId, email, moment, FormKind.SC1).futureValue
     wiremockServer.verify(
       postRequestedFor(urlEqualTo("/ofsted-forms-notifications/acceptance"))
         .withRequestBody(expected)
@@ -96,7 +97,7 @@ class NotificationsConnectorSpec extends FlatSpec with Matchers with MockitoSuga
 
   it should "make correct request to service on rejection" in {
     val connector = app.injector.instanceOf[NotificationsConnector]
-    connector.rejection(formId, email, moment).futureValue
+    connector.rejection(formId, email, moment, FormKind.SC1).futureValue
     wiremockServer.verify(
       postRequestedFor(urlEqualTo("/ofsted-forms-notifications/acceptance"))
         .withRequestBody(expected)

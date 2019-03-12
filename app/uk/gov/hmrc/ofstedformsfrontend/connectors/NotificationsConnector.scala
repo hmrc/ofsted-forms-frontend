@@ -22,7 +22,7 @@ import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Named, Singleton}
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, Occurrence}
+import uk.gov.hmrc.ofstedformsfrontend.forms.{FormId, FormKind, Occurrence}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,9 +38,9 @@ object NotificationId {
 
 @ImplementedBy(classOf[HttpNotificationsConnector])
 trait NotificationsConnector {
-  def submission(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId]
-  def acceptance(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId]
-  def rejection(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId]
+  def submission(formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId]
+  def acceptance(formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId]
+  def rejection(formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId]
 }
 
 @Singleton
@@ -50,27 +50,28 @@ class HttpNotificationsConnector @Inject()(httpClient: HttpClient,
 
   private val submissionUrl = baseUrl + "/ofsted-forms-notifications/submission"
 
-  def submission(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
-    notify(submissionUrl, formId, email, submission)
+  def submission(formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId] = {
+    notify(submissionUrl, formId, email, submission, kind)
   }
 
   private val acceptanceUrl = baseUrl + "/ofsted-forms-notifications/acceptance"
 
-  def acceptance(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
-    notify(acceptanceUrl, formId, email, submission)
+  def acceptance(formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId] = {
+    notify(acceptanceUrl, formId, email, submission, kind)
   }
 
   private val rejectionUrl = baseUrl + "/ofsted-forms-notifications/rejection"
 
-  def rejection(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
-    notify(rejectionUrl, formId, email, submission)
+  def rejection(formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId] = {
+    notify(rejectionUrl, formId, email, submission, kind)
   }
 
-  private def notify(url: String, formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
+  private def notify(url: String, formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId] = {
     val payload = Json.obj(
       "time" -> submission.moment,
       "email" -> email,
-      "id" -> formId.value.toString
+      "id" -> formId.value.toString,
+      "kind" -> kind
     )
     httpClient.POST(url, payload, Seq.empty).flatMap(request =>
       Future.fromTry(NotificationId(request.body))
