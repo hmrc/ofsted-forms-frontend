@@ -29,7 +29,7 @@ import uk.gov.hmrc.ofstedformsfrontend.forms._
 import scala.concurrent.{ExecutionContext, Future}
 
 object Fake {
-  val checkAdminPass = new CheckAdminPass(Set("admin@example.com"), ExecutionContext.global)
+  val checkAdminPass = new CheckAdminPass(Set("127.0.0.1"), ExecutionContext.global)
 
   def loggedAs(user: AuthenticatedUser, hc: HeaderCarrier = HeaderCarrier()): AuthenticateActions = new AuthenticateActions {
     override def parser: BodyParser[AnyContent] = Helpers.stubBodyParser()
