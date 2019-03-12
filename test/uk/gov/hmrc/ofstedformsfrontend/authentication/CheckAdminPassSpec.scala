@@ -28,13 +28,15 @@ class CheckAdminPassSpec extends FlatSpec with Matchers {
 
   val executionContext = ExecutionContext.global
 
-  val check = new CheckAdminPass(Set("admin@example.com"), executionContext)
+  val check = new CheckAdminPass(Set("127.0.0.1"), executionContext)
 
-  val headerCarrier = HeaderCarrier()
+  val adminHeaderCarrier = HeaderCarrier(trueClientIp = Some("127.0.0.1"))
 
-  val adminRequest = new AuthenticatedRequest(AuthenticatedUser("admin-internalId", "admin@example.com"), headerCarrier, FakeRequest("POST", "/"))
+  val adminRequest = new AuthenticatedRequest(AuthenticatedUser("admin-internalId", "admin@example.com"), adminHeaderCarrier, FakeRequest("POST", "/"))
 
-  val userRequest = new AuthenticatedRequest(AuthenticatedUser("user-internalId", "user@example.com"), headerCarrier, FakeRequest("POST", "/"))
+  val userHeaderCarrier = HeaderCarrier(trueClientIp = Some("some non-admin user IP address"))
+
+  val userRequest = new AuthenticatedRequest(AuthenticatedUser("user-internalId", "user@example.com"), userHeaderCarrier, FakeRequest("POST", "/"))
 
   it should "pass admin" in {
     val response = check.invokeBlock[AnyContent](adminRequest, _ => Future.successful(Results.Ok("Ok")))
