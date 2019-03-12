@@ -98,7 +98,7 @@ case class SubmittedForm(id: FormId, kind: FormKind, created: Occurrence, submis
     val acceptance = Occurrence(acceptor, ZonedDateTime.now())
     val result = ApprovedForm(id, kind, created, submission, acceptance)
     formRepository.save(result).flatMap( saved =>
-      notificationsConnector.acceptance(saved.id, saved.created.executor.email, saved.acceptance).map(_ => saved)
+      notificationsConnector.acceptance(saved.id, saved.created.executor.email, saved.acceptance, kind).map(_ => saved)
     )
   }
 
@@ -108,7 +108,7 @@ case class SubmittedForm(id: FormId, kind: FormKind, created: Occurrence, submis
     val rejection = Occurrence(rejector, ZonedDateTime.now())
     val result = RejectedForm(id, kind, created, submission, rejection)
     formRepository.save(result).flatMap( saved =>
-      notificationsConnector.rejection(saved.id, saved.created.executor.email, saved.rejection).map(_ => saved)
+      notificationsConnector.rejection(saved.id, saved.created.executor.email, saved.rejection, kind).map(_ => saved)
     )
   }
 }
@@ -127,7 +127,7 @@ case class Draft(id: FormId, kind: FormKind, created: Occurrence) extends Genera
     val submission = Occurrence(submitter, ZonedDateTime.now())
     val result = SubmittedForm(id, kind, created, submission)
     formRepository.save(result).flatMap( saved =>
-      notificationsConnector.submission(saved.id, submitter.email, submission)
+      notificationsConnector.submission(saved.id, submitter.email, submission, kind)
         .map(notification => (saved, notification))
     )
 

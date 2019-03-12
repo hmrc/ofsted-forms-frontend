@@ -76,15 +76,15 @@ object Fake {
   }
 
   val notificationsConnector: NotificationsConnector = new NotificationsConnector {
-    override def submission(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
+    override def submission(formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId] = {
       Future.successful(new NotificationId(UUID.randomUUID()))
     }
 
-    override def acceptance(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
+    override def acceptance(formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId] = {
       Future.successful(new NotificationId(UUID.randomUUID()))
     }
 
-    override def rejection(formId: FormId, email: String, submission: Occurrence)(implicit hc: HeaderCarrier): Future[NotificationId] = {
+    override def rejection(formId: FormId, email: String, submission: Occurrence, kind: FormKind)(implicit hc: HeaderCarrier): Future[NotificationId] = {
       Future.successful(new NotificationId(UUID.randomUUID()))
     }
   }
