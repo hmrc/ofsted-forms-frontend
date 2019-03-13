@@ -46,6 +46,13 @@ class Module extends AbstractModule {
   }
 
   @Provides
+  @Named("ofsted-forms-proxy-base-url")
+  @Singleton
+  def ofstedFormsProxyBaseUrl(servicesConfig: ServicesConfig): String = {
+    servicesConfig.baseUrl("ofsted-forms-proxy")
+  }
+
+  @Provides
   @Named("upscan-initiate-base-url")
   @Singleton
   def upscanInitiateBaseUrl(servicesConfig: ServicesConfig): String = {
