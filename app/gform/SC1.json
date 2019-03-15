@@ -1,0 +1,452 @@
+{
+  "_id": "SC1TestBuild",
+  "formName": "Testing version for path builds, will be used to overwrite SC1 when we are happy.",
+  "description": "",
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "dmsSubmission": {
+    "businessArea": "For example: FinanceOpsCorpT",
+    "classificationType": "For example: BT-NRU-Environmental",
+    "customerId": "${fieldIdOfCustomerIdentifier}",
+    "dmsFormId": "CHANGEME"
+  },
+  "sections": [
+    {
+      "title": "Have you got evidence to show your organisation has the funds to operate the proposed establishment or agency?",
+      "fields": [
+        {
+          "id": "generatedId_44fb61e2_4fcc_47b1_967e_c80ade178dd1",
+          "type": "info",
+          "label": "",
+          "infoText": "You will need to upload evidence of your organisation's finance to show it has enough funds to run and maintain the social care establishment or agency.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "generatedId_048ee8ad_f5f5_4bc3_a205_e651bd1c68fc",
+          "type": "info",
+          "label": "",
+          "infoText": "You will need to upload these types of evidence:\n\n- financial reference from your bank\n-  business plan \n-  cash-flow forecast\n- company's last 2 annual reports and accounts  (if you have them)\n- company's last 2 annual accounts  (if you have them)",
+          "infoType": "noformat"
+        },
+        {
+          "id": "eviChoi",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "Yes I have evidence",
+            "No I do not have evidence"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "You don't have the right documents to continue with this application",
+      "includeIf": "${eviChoi = 1}",
+      "continueIf": "true",
+      "fields": [
+        {
+          "id": "generatedId_bc229245_768f_48c2_921d_def03f568142",
+          "type": "info",
+          "label": "Ofsted will not be able to consider your application without these documents to show you are able to run a social care establishment or agency.",
+          "infoText": "Ofsted will not be able to consider your application without these documents.",
+          "infoType": "noformat"
+        }
+      ]
+    },
+    {
+      "title": "What type of business do you want to apply as?",
+      "fields": [
+        {
+          "id": "generatedId_bc91dd83_114e_48dc_84f2_4e659156d623",
+          "type": "info",
+          "label": "bisInfo1",
+          "infoText": "We must know your business type to register all the authorised individuals, establishment or agency and branches that plan to provide a social care service.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "businessChoice2",
+          "type": "choice",
+          "label": "",
+          "shortName": "Type of business",
+          "choices": [
+            "Organisation",
+            "Individual",
+            "Partnership"
+          ],
+          "optionHelpText": [
+            "Including charities, local councils and limited companies ",
+            "These are individuals and groups of them who haven't registered their business with Companies House",
+            "This includes limited partnerships and limited liability partnerships (LLP)"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Are you a local council?",
+      "includeIf": "${businessChoice2 = 0}",
+      "fields": [
+        {
+          "id": "couChoi",
+          "type": "choice",
+          "label": "Are you a local council?",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "What type of agency or establishment are you applying to register?",
+      "fields": [
+        {
+          "id": "appType",
+          "type": "choice",
+          "label": "What type of agency or establishment are you applying to register?",
+          "shortName": "Type of agency or establishment",
+          "choices": [
+            "Children's home",
+            "Independent fostering agency",
+            "Adoption support agency",
+            "Voluntary adoption agency",
+            "Residential holiday scheme for disabled children",
+            "Residential family centre"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Are you applying to register a school as a children's home?",
+      "includeIf": "${appType = 0}",
+      "fields": [
+        {
+          "id": "generatedId_a56ffaee_1924_49fe_b694_cbfcb9fbac7b",
+          "type": "info",
+          "label": "edCH",
+          "infoText": "This can be an existing or planned school that  you plan to provide boarding for more than 295 days.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "edCHchoice",
+          "type": "choice",
+          "label": "",
+          "shortName": "Register educational establishment as children's home",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "What is your school's Department for Education (DfE) number?",
+      "includeIf": "${appType = 0}",
+      "fields": [
+        {
+          "id": "generatedId_0c4f41c5_e48c_4576_80c7_34fb5d7df701",
+          "type": "info",
+          "label": "DfEInfo",
+          "infoText": "We need your DfE number to let the Department for Education know that you have applied to register as a children's home.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "generatedId_00f7a58a_0bf1_4892_8986_63386194dac8",
+          "type": "info",
+          "label": "How do I find my DfE number?",
+          "infoText": "You can find your DfE number at the  [find and compare schools service](https://www.gov.uk/school-performance-tables) .",
+          "infoType": "long"
+        },
+        {
+          "id": "DfENo",
+          "type": "text",
+          "label": "DfE number",
+          "helpText": "It's 7 digits in this format, 689/1234",
+          "format": "text(0,20) "
+        }
+      ]
+    },
+    {
+      "title": "Do you plan to buy a children's social care establishment or agency?",
+      "fields": [
+        {
+          "id": "planCSCEstOrAg",
+          "type": "choice",
+          "label": "",
+          "shortName": "Plan to buy",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Is the existing children's establishment or agency you will buy registered with Ofsted?",
+      "includeIf": "${planCSCEstOrAg = 0}",
+      "fields": [
+        {
+          "id": "ofRegQues",
+          "type": "choice",
+          "label": "",
+          "shortName": "Existing children's establishment or agency",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Details of establishment or agency you will buy",
+      "includeIf": "${planCSCEstOrAg = 0 && ofRegQues = 0}",
+      "fields": [
+        {
+          "id": "agEstName",
+          "type": "text",
+          "label": "Name of agency or establishment",
+          "shortName": "Name",
+          "format": "text(0,150)"
+        },
+        {
+          "id": "ofReg",
+          "type": "text",
+          "label": "Ofsted registration number (URN)",
+          "shortName": "URN",
+          "helpText": "It's on correspondence letters from Ofsted. For registrations before 2015,  the number starts with SC and has 6 digits, for example, SC123456.  From 2015, it's 7 digits. For example, 1234567.",
+          "format": "text(0,20)"
+        }
+      ]
+    },
+    {
+      "title": "Details of establishment or agency you will buy",
+      "includeIf": "${planCSCEstOrAg = 0 && ofRegQues = 1}",
+      "fields": [
+        {
+          "id": "agEstName_copy_1",
+          "type": "text",
+          "label": "Name of agency or establishment",
+          "shortName": "Name of agency or establishment",
+          "format": "text(0,150)"
+        }
+      ]
+    },
+    {
+      "title": "Address of establishment or agency you will buy",
+      "includeIf": "${planCSCEstOrAg = 0}",
+      "fields": [
+        {
+          "id": "generatedId_24529809_67bd_4c36_9831_dfadc8c694a8",
+          "type": "info",
+          "label": "",
+          "infoText": "We may contact you using these details  when checking your application",
+          "infoType": "noformat"
+        },
+        {
+          "id": "agEsAdd",
+          "type": "address",
+          "label": "",
+          "shortName": "Address"
+        },
+        {
+          "id": "agEsTel",
+          "type": "text",
+          "label": "Telephone number",
+          "shortName": "Telephone number",
+          "helpText": "Include area code, for example 020 7960 0000",
+          "format": "telephoneNumber"
+        },
+        {
+          "id": "agEsEm",
+          "type": "text",
+          "label": "Email ",
+          "format": "email"
+        }
+      ]
+    },
+    {
+      "title": "Have you applied to register a children's social care establishment or agency with Ofsted before?",
+      "fields": [
+        {
+          "id": "prevOfApp",
+          "type": "choice",
+          "label": "",
+          "helpText": "We need to know this so we can check to see if you are already registered in our records.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Was the application made before 30 September 2010?",
+      "includeIf": "${prevOfApp = 0}",
+      "fields": [
+        {
+          "id": "ApplicationDate",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+      {
+      "title": "Tell us about the people you want to add to your proposed registered provider",
+      "repeatsMin": "${noIndPeoAdd}",
+      "repeatsMax": "${noIndPeoAdd}",
+      "fields": [
+        {
+          "id": "generatedId_bb3885c8_88bf_43ec_a65f_1c9767deea24",
+          "type": "info",
+          "label": "",
+          "infoText": "** Explain why we're asking this info **  \n\nFor example, we need to know about each individual so we can check their eligibility to be an individual provider.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "indProvTi",
+          "type": "text",
+          "label": "Title",
+          "shortName": "Title",
+          "format": "text(0,30)",
+          "displayWidth": "xs"
+        },
+        {
+          "id": "indProvFiNam",
+          "type": "text",
+          "label": "First name(s)",
+          "shortName": "First name"
+        },
+        {
+          "id": "indProvSur",
+          "type": "text",
+          "label": "Last name",
+          "shortName": "Last name"
+        },
+        {
+          "id": "indProvDOB",
+          "type": "date",
+          "label": "Date of birth",
+          "shortName": "Date of birth",
+          "helpText": "Enter the date of birth in the following format, dd/mm/yyyy"
+        },
+        {
+          "id": "indProvPos",
+          "type": "text",
+          "label": "Position",
+          "shortName": "Position"
+        },
+        {
+          "id": "indProvMan",
+          "type": "choice",
+          "label": "Does this person have management responsibility?",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "id": "indProvKid",
+          "type": "choice",
+          "label": "Does this person have contact with children and / or young people?",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "id": "generatedId_9d7bf20e_593c_4950_ace8_80e0a709823a",
+          "type": "info",
+          "label": "",
+          "infoText": "Each person who is part of the individual provider must submit a completed SC2 form  in order for us to consider this application",
+          "infoType": "important"
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "shortName": "Declaration",
+    "fields": [
+      {
+        "id": "generatedId_c5c51b12_5451_443e_8703_a1512964797b",
+        "type": "info",
+        "label": "",
+        "infoText": "You must enter the details of someone who is authorised to sign this declaration.",
+        "infoType": "noformat"
+      },
+      {
+        "id": "decFullName",
+        "type": "text",
+        "label": "Full Name"
+      },
+      {
+        "id": "decPos",
+        "type": "text",
+        "label": "Position in the company",
+        "helpText": "For example, director or company secretary"
+      },
+      {
+        "id": "generatedId_b53ffc7d_4c98_44e4_91d5_6f4acd8659f1",
+        "type": "info",
+        "label": "",
+        "infoText": "By submitting this form, you declare and agree that\n",
+        "infoType": "noformat"
+      },
+      {
+        "id": "generatedId_2e9db599_e0b0_4d32_b630_81d02896e625",
+        "type": "info",
+        "label": "",
+        "infoText": "- the information that you have submitted is true to the best of your knowledge and complete\n\n- the details you provided in the service you are applying to register in this application form the conditions of your registration with Ofsted\n\n- to notify Ofsted of any changes to the information on this form which may affect my suitability to provide social care.\n\n- all the information you have given on this application form is true to the best of your knowledge and belief\n\n- you as an individual who is providing the service or your organisation has enough funds to fulfil your duties and obligations as a registered social care agency or establishment\n\n- every person who works, or is intended to work for the purposes of the establishment or agency who has regular contact with children or access to sensitive information about children, has an enhanced Disclosure and Barring Service certificate, where they are eligible for one",
+        "infoType": "noformat"
+      },
+      {
+        "id": "generatedId_ab560928_19f3_4f37_b82f_39342d8ada67",
+        "type": "info",
+        "label": "",
+        "infoText": "You may be prosecuted and your application refused if you deliberately give untrue or missing information.\n\nYour application is not complete until you have paid the application fee\n\nOfsted will carry out checks and using the information provided from the checks and this application form as explained above",
+        "infoType": "important"
+      },
+      {
+        "id": "declarationEmailGroup",
+        "type": "group",
+        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "fields": [
+          {
+            "id": "email",
+            "type": "text",
+            "label": "Email address",
+            "format": "email",
+            "mandatory": "true",
+            "errorMessage": "Enter a valid email address with no spaces, like name@example.com"
+          }
+        ]
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "title": "Confirmation page",
+    "shortName": "Acknowledgement Page",
+    "fields": [
+      {
+        "id": "helpText8",
+        "type": "info",
+        "label": "",
+        "infoText": "This is your last opportunity to print or save a pdf copy of your submitted form."
+      },
+      {
+        "id": "ackpageInfo",
+        "type": "info",
+        "label": "What happens next",
+        "infoText": "We have sent your application to the registration team.\n\nThe responsible and registered individuals, partners and managers need to complete an SC2 application form.\n\nThey will contact you either to confirm that your application register has been accepted and is ready to be considered, or to ask for more information.\n\nIf you need to contact us about your application, you can call our helpline on 0300 123 1231. We are open from 8am to 6pm (Monday to Friday)."
+      }
+    ]
+  },
+  "GFC579Ready": "true",
+  "submitErrorUrl": "deprecated",
+  "submitSuccessUrl": "deprecated"
+}

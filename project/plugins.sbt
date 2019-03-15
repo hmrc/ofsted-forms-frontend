@@ -16,3 +16,5 @@ addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "1.3.0")
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.20")
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.1")
+
+addSbtPlugin("com.luketebbs.uniform"  % "sbt-gforms-to-uniform-converter" % "3e8ab265d61dc98cc4d6930b3bd6e5f688ae4a7e-SNAPSHOT")
