@@ -11,6 +11,5 @@
 
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
-
-GET           /cygnum/test-only/geturn              uk.gov.hmrc.ofstedformsfrontend.testonly.TestOnlyController.geturn()
+->         /ofsted/test-only          test.Routes
 
