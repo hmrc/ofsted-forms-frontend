@@ -59,7 +59,7 @@ trait WiremockSpec extends BeforeAndAfterAll { self: Suite =>
   def addStubMapping(mapping: StubMapping): Unit = wiremockServer.addStubMapping(mapping)
 
   def postRequestedFor(matcher: UrlPattern): RequestPatternBuilder = WireMock.postRequestedFor(matcher)
-  
+
   def getRequestedFor(matcher: UrlPattern): RequestPatternBuilder = WireMock.getRequestedFor(matcher)
 
   def putRequestedFor(matcher: UrlPattern): RequestPatternBuilder = WireMock.putRequestedFor(matcher)
