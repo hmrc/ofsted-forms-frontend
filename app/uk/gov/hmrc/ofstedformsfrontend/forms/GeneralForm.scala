@@ -20,6 +20,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 import enumeratum._
+import play.api.libs.json.{Reads, Writes}
 import play.api.mvc.PathBindable
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.ofstedformsfrontend.authentication.AuthenticatedUser
@@ -28,12 +29,18 @@ import uk.gov.hmrc.ofstedformsfrontend.connectors.{NotificationId, Notifications
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 
-case class FormId(value: UUID)
+case class FormId(value: UUID) {
+  def asString: String = value.toString
+}
 
 object FormId {
   def apply(): FormId = new FormId(UUID.randomUUID())
 
   implicit val pathBindable: PathBindable[FormId] = PathBindable.bindableUUID.transform[FormId](apply, _.value)
+
+  implicit val reads: Reads[FormId] = Reads.uuidReads.map(FormId.apply)
+
+  implicit val writes: Writes[FormId] = Writes(id => Writes.UuidWrites.writes(id.value))
 }
 
 sealed trait FormKind extends EnumEntry

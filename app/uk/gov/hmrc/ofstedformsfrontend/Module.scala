@@ -16,11 +16,16 @@
 
 package uk.gov.hmrc.ofstedformsfrontend
 
+import akka.actor.ActorSystem
 import com.google.inject.{AbstractModule, Provides}
 import javax.inject.{Named, Singleton}
+import play.api.libs.ws.{DefaultWSProxyServer, WSClient, WSProxyServer}
 import play.api.{ConfigLoader, Configuration}
 import uk.gov.hmrc.ofstedformsfrontend.authentication.{AuthenticationConfiguration, AuthenticationConfigurationProvider}
+import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.http.{DefaultHttpClient, HttpClient}
+import uk.gov.hmrc.play.http.ws.WSProxy
 
 class Module extends AbstractModule {
 
@@ -57,6 +62,41 @@ class Module extends AbstractModule {
   @Singleton
   def upscanInitiateBaseUrl(servicesConfig: ServicesConfig): String = {
     servicesConfig.baseUrl("upscan-initiate")
+  }
+
+  @Provides
+  @Named("ofsted-db-base-url")
+  @Singleton
+  def ofstedDbBaseUrl(servicesConfig: ServicesConfig): String = {
+    servicesConfig.baseUrl("ofsted-db")
+  }
+
+  @Provides
+  @Singleton
+  def proxyConfiguration(configuration: Configuration): Option[WSProxyServer] = {
+    if(configuration.get[Boolean]("proxy.proxyRequiredForThisEnvironment")){
+      val host = configuration.get[String]("proxy.host")
+      val port = configuration.get[Int]("proxy.port")(ConfigLoader.stringLoader.map(_.toInt))
+      val username = configuration.get[Option[String]]("proxy.username")
+      val password = configuration.get[Option[String]]("proxy.password")
+      val protocol = configuration.get[Option[String]]("proxy.protocol")
+      Some(DefaultWSProxyServer(host, port, protocol, username, password))
+    } else {
+      None
+    }
+  }
+
+  @Provides
+  @Named("proxy")
+  @Singleton
+  def proxyHttpClient(proxyConfig: Option[WSProxyServer],
+                      config: Configuration,
+                      audit: HttpAuditing,
+                      wsClient: WSClient,
+                      system: ActorSystem): HttpClient = {
+    new DefaultHttpClient(config, audit, wsClient, system) with WSProxy {
+      override def wsProxyServer: Option[WSProxyServer] = proxyConfig
+    }
   }
 
   override def configure(): Unit = {
