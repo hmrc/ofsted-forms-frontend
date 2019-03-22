@@ -65,6 +65,13 @@ class Module extends AbstractModule {
   }
 
   @Provides
+  @Named("ofsted-db-base-url")
+  @Singleton
+  def ofstedDbBaseUrl(servicesConfig: ServicesConfig): String = {
+    servicesConfig.baseUrl("ofsted-db")
+  }
+
+  @Provides
   @Singleton
   def proxyConfiguration(configuration: Configuration): Option[WSProxyServer] = {
     if(configuration.get[Boolean]("proxy.proxyRequiredForThisEnvironment")){

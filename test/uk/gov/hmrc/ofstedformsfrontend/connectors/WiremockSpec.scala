@@ -42,6 +42,12 @@ trait WiremockSpec extends BeforeAndAfterAll { self: Suite =>
 
   def any(pattern: UrlPattern): MappingBuilder = WireMock.any(pattern)
 
+  def get(pattern: UrlPattern): MappingBuilder = WireMock.get(pattern)
+
+  def post(pattern: UrlPattern): MappingBuilder = WireMock.post(pattern)
+
+  def put(pattern: UrlPattern): MappingBuilder = WireMock.put(pattern)
+
   def urlEqualTo(url: String): UrlPattern = WireMock.urlEqualTo(url)
 
   def ok: ResponseDefinitionBuilder = WireMock.ok()
@@ -53,6 +59,14 @@ trait WiremockSpec extends BeforeAndAfterAll { self: Suite =>
   def addStubMapping(mapping: StubMapping): Unit = wiremockServer.addStubMapping(mapping)
 
   def postRequestedFor(matcher: UrlPattern): RequestPatternBuilder = WireMock.postRequestedFor(matcher)
+  
+  def getRequestedFor(matcher: UrlPattern): RequestPatternBuilder = WireMock.getRequestedFor(matcher)
+
+  def putRequestedFor(matcher: UrlPattern): RequestPatternBuilder = WireMock.putRequestedFor(matcher)
 
   def equalToJson(json: String): StringValuePattern = WireMock.equalToJson(json)
+
+  def matchingJsonPath(path: String): StringValuePattern = WireMock.matchingJsonPath(path)
+
+  def equalTo(string: String): StringValuePattern = WireMock.equalTo(string)
 }

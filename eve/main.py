@@ -6,8 +6,10 @@ class MyValidator(Validator):
     def _validate_type_uuid(self, value):
         try:
             UUID(value) # would throw error if value is not correct UUID
+            return True
         except ValueError:
             pass
+            return False
 
 app = Eve(validator=MyValidator)
 

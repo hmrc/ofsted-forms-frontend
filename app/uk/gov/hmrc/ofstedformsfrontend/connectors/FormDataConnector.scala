@@ -17,6 +17,7 @@
 package uk.gov.hmrc.ofstedformsfrontend.connectors
 
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Named}
@@ -39,18 +40,22 @@ object FormData {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
 
+  private val pythonZoneReads = Reads.zonedDateTimeReads(DateTimeFormatter.RFC_1123_DATE_TIME)
+
   implicit val reads: Reads[FormData] = (
     (__ \ "_id").read[String] and
       (__ \ "formId").read[FormId] and
       (__ \ "data").read[Map[String, String]] and
       (__ \ "_etag").read[String] and
-      (__ \ "_created").read[ZonedDateTime] and
-      (__ \ "_updated").read[ZonedDateTime]
+      (__ \ "_created").read(pythonZoneReads) and
+      (__ \ "_updated").read(pythonZoneReads)
     ) (FormData.apply _)
 }
 
 @ImplementedBy(classOf[FormDataConnector])
 trait FormDataProvider {
+  def create(id: FormId)(implicit hc: HeaderCarrier): Future[Unit]
+
   def get(id: FormId)(implicit hc: HeaderCarrier): Future[FormData]
 
   def put(data: FormData, value: Map[String, String])(implicit hc: HeaderCarrier): Future[Unit]
@@ -59,6 +64,15 @@ trait FormDataProvider {
 class FormDataConnector @Inject()(@Named("proxy") httpClient: HttpClient,
                                   @Named("ofsted-db-base-url") baseUrl: String)
                                  (implicit ec: ExecutionContext) extends FormDataProvider {
+
+  private val createUrl = s"${baseUrl}/forms"
+
+  override def create(id: FormId)(implicit hc: HeaderCarrier): Future[Unit] = {
+    val payload = Json.obj(
+      "formId" -> id.asString
+    )
+    httpClient.POST[JsValue, JsValue](createUrl, payload).map(_ => ())
+  }
 
   override def get(id: FormId)(implicit hc: HeaderCarrier): Future[FormData] = {
     httpClient.GET[FormData](s"${baseUrl}/forms/${id.asString}")
@@ -70,8 +84,8 @@ class FormDataConnector @Inject()(@Named("proxy") httpClient: HttpClient,
       "data" -> value
     )
     val url = s"${baseUrl}/forms/${data.internalId}"
-    val updatedHeader = hc.copy(otherHeaders = hc.otherHeaders :+ ("If-Match" -> data.etag))
-    httpClient.PUT[JsValue, JsValue](url,payload)(implicitly[Writes[JsValue]], implicitly[HttpReads[JsValue]], hc, ec)
+    val updatedHeader = hc.withExtraHeaders("If-Match" -> data.etag)
+    httpClient.PUT[JsValue, JsValue](url,payload)(implicitly[Writes[JsValue]], implicitly[HttpReads[JsValue]], updatedHeader, ec)
       .map(_ => ())
   }
 }

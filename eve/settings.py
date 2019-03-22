@@ -1,3 +1,5 @@
+import datetime
+
 DOMAIN={
     'forms' : {
         'resource_methods': ['GET', 'POST'],
@@ -27,3 +29,5 @@ DOMAIN={
 }
 
 HATEOAS=False
+
+#DATE_FORMAT="%Y-%m-%dT%H:%M:%S%Z"
