@@ -1,7 +1,6 @@
-
 # ofsted-forms-frontend
 
-This is a placeholder README.md for a new repository
+This is service is not complete. The project has been shelved until further instruction.
 
 ### Login
 
